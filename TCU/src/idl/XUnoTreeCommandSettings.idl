@@ -1,0 +1,15 @@
+#ifndef _pq_XUnoTreeCommandSettings_idl_
+#define _pq_XUnoTreeCommandSettings_idl_
+
+#include <com/sun/star/uno/XInterface.idl>
+
+module pq {
+	interface XUnoTreeCommandSettings {
+		[attribute] boolean OffLine;
+		[attribute] sequence <string> IgnoredIDLs;
+		[attribute] string RefURL;
+		[attribute] string RefDir;
+	};
+};
+
+#endif

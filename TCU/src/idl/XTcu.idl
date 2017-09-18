@@ -1,0 +1,14 @@
+#ifndef _pq_XTcu_idl_
+#define _pq_XTcu_idl_
+
+#include <XUnoTreeCommand.idl>
+#include <XUnoTreeCommandSettings.idl>
+
+module pq {
+	interface XTcu {
+		interface XUnoTreeCommand;
+		interface XUnoTreeCommandSettings;
+	};
+};
+
+#endif

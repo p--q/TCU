@@ -1,0 +1,14 @@
+#ifndef _pq_XUnoTreeCommand_idl_
+#define _pq_XUnoTreeCommand_idl_
+
+#include <com/sun/star/uno/XInterface.idl>
+
+module pq {
+	interface XUnoTreeCommand {
+		sequence <string> tree([in] any Object);
+		void itree([in] any Object);
+		void wtree([in] any Object);
+	};
+};
+
+#endif
