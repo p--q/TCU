@@ -1,94 +1,127 @@
 #!/opt/libreoffice5.2/program/python
 # -*- coding: utf-8 -*-
-import os, gettext
+import os, unohelper
 from com.sun.star.beans import PropertyValue
-
-def localization(configurationprovider):  # 地域化。moファイルの切替。Linuxでは不要だがWindowsでは設定が必要。
-	global _
-	node = PropertyValue(Name="nodepath", Value="/org.openoffice.Setup/L10N")
+from com.sun.star.style.VerticalAlignment import MIDDLE, BOTTOM
+from com.sun.star.awt import XActionListener, XMouseListener
+from com.sun.star.ui.dialogs.ExecutableDialogResults import OK
+from .common import localization
+from .common import enableRemoteDebugging  # デバッグ用デコレーター
+def dilaogHandler(consts, dialog, eventname):
+	ctx, smgr, configurationprovider, css, properties, nodepath, simplefileaccess = consts
+	global _  # グローバルな_を地域化関数に置換する。
+	_ = localization(configurationprovider)  # グローバルな_を地域化関数に置換。
+	node = PropertyValue(Name="nodepath", Value="{}OptionDialog".format(nodepath))
 	root = configurationprovider.createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", (node,))
-	lang = root.getHierarchicalPropertyValue("ooLocale"),  # 現在のロケールを取得。タプルかリストで渡す。
-	lodir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "locale")  # このスクリプトと同じファルダにあるlocaleフォルダの絶対パスを取得。
-	mo = os.path.splitext(os.path.basename(__file__))[0]  # moファイル名。拡張子なし。このスクリプトファイルと同名と想定。
-	t = gettext.translation(mo, lodir, lang, fallback=True)  # Translations インスタンスを取得。moファイルがなくてもエラーはでない。
-	_ = t.gettext  # _にt.gettext関数を代入。
-def dilaogHandler(treecommand, dialog, eventname):
-	ctx = treecommand.ctx
-	smgr = treecommand.smgr
-	configurationprovider = treecommand.configurationprovider
-# 	localization(configurationprovider)  # 地域化。
+	configs = root.getPropertyValues(properties)  # コンポーネントデータノードから値を取得する。	
+	state, refurl, path, idlsedit = toDialog(ctx, smgr, css, simplefileaccess, configs)  # ダイアログ用データの取得。pathはシステムパス。
 	if eventname=="initialize":  # オプションダイアログがアクティブになった時
+		actionlistener = ActionListener(dialog, consts)
 		addControl = controlCreator(ctx, smgr, dialog)  # オプションダイアログdialogにコントロールを追加する関数を取得。
-		addControl("FixedLine", {"PositionX": 5, "PositionY": 13, "Width": 250, "Height": 10, "Label": "TCU - Tree Command for UNO"})  # 文字付き水平線。
-
-
-
-# IgnoredIDLs
-# self.RefURL = "api.libreoffice.org/docs/idl/ref/" 
-# self.RefDir = os.path.join(inst_path, "sdk", "docs", "idl", "ref") 
-# OffLine
-		
-	
+		addControl("FixedLine", {"PositionX": 5, "PositionY": 6, "Width": 268, "Height": 10, "Label": _("TCU - Tree Command for UNO")})  # 文字付き水平線。
+		addControl("FixedText", {"PositionX": 5, "PositionY": 22, "Width": 83, "Height": 15, "Label": _("API Reference URL: https://"), "NoLabel": True, "VerticalAlign": MIDDLE, "Align": 2})
+		addControl("Edit", {"Name": "RefUrl", "PositionX": 89, "PositionY": 22, "Width": 184, "Height": 15, "Text": refurl})
+		addControl("FixedHyperlink", {"PositionX": 89, "PositionY": 38, "Width": 184, "Height": 10, "Label": _("Jump to this URL"), "TextColor": 0x3D578C, "Align": 2}, {"addMouseListener": MouseListener(dialog)})  # ActionListenerをつけるとリンクが開かない。
+		addControl("GroupBox", {"PositionX": 5, "PositionY": 47, "Width": 268, "Height": 58, "Label": "Local Reference"})   
+		addControl("CheckBox", {"Name": "OffLine", "PositionX": 11, "PositionY": 56, "Width": 258, "Height": 8, "Label": _("~Use Local Reference"), "State": state}) 
+		addControl("FixedText", {"PositionX": 11, "PositionY": 67, "Width": 258, "Height": 15, "Label": _("Local Reference Path:"), "NoLabel": True, "VerticalAlign": BOTTOM}) 
+		addControl("FixedText", {"Name": "RefDir" , "PositionX": 11, "PositionY": 82, "Width": 230, "Height": 15, "Label": path, "NoLabel": True, "VerticalAlign": BOTTOM})  
+		addControl("Button", {"PositionX": 242, "PositionY": 82, "Width": 27, "Height": 15, "Label": _("~Browse")}, {"setActionCommand": "folderpicker", "addActionListener": actionlistener})
+		addControl("FixedText", {"PositionX": 11, "PositionY": 107, "Width": 258, "Height": 15, "Label": _("Ignored Interfaces:"), "NoLabel": True, "VerticalAlign": MIDDLE}) 
+		addControl("Edit", {"Name": "IgnoredIdls", "PositionX": 5, "PositionY": 124, "Width": 268, "Height": 96, "MultiLine": True, "Text": idlsedit})  
+		addControl("Button", {"PositionX": 218, "PositionY": 224, "Width": 55, "Height": 15, "Label": _("~Restore Defaults")}, {"setActionCommand": "restore","addActionListener": actionlistener})
 	elif eventname=="ok":  # OKボタンが押された時
-		pass
+		state = dialog.getControl("OffLine").getState()
+		refurl = dialog.getControl("RefUrl").getText()
+		path = dialog.getControl("RefDir").getText()  # システムパスが返ってくる。
+		idlsedit = dialog.getControl("IgnoredIdls").getText()
+		offline = True if state==1 else False
+		refdir = unohelper.systemPathToFileUrl(path) if simplefileaccess.exists(path) else "" # システムパスをfileurlに変換する。
+		idlstext = "".join(idlsedit.split()).replace(css, "")  # 空白、タブ、改行とcom.sun.starを除去。
+		configs = offline, refurl, refdir, idlstext  # コンポーネントデータノード用の値を取得。
+		node = PropertyValue(Name="nodepath", Value="{}OptionDialog".format(nodepath))
+		root = configurationprovider.createInstanceWithArguments("com.sun.star.configuration.ConfigurationUpdateAccess", (node,))
+		root.setPropertyValues(properties, configs)  # コンポーネントデータノードに値を代入。
+		root.commitChanges()  # registrymodifications.xcuに変更後の値を書き込む。
 	elif eventname=="back":  # 元に戻すボタンが押された時
+		toControls(dialog, (state, refurl, path, idlsedit))  # 各コントロールに値を入力する。		
+def toDialog(ctx, smgr, css, simplefileaccess, configs):  # ダイアログ向けにデータを変換する。
+	offline, refurl, refdir, idlstext = configs  # コンポーネントデータノード用の値を取得。	
+	state = 1 if offline else 0
+	pathsubstservice = smgr.createInstanceWithContext("com.sun.star.comp.framework.PathSubstitution", ctx)
+	fileurl = pathsubstservice.substituteVariables(refdir, True)  # $(inst)を変換する。fileurlが返ってくる。
+	path = os.path.normpath(unohelper.fileUrlToSystemPath(fileurl)) if simplefileaccess.exists(fileurl) else "Local API Reference does not exists."  # fileurlをシステムパスに変換する。パスの実存を確認する。
+	idls = "".join(idlstext.split()).split(",")  # xmlがフォーマットされていると空白やタブが入ってくるのでそれを除去してリストにする。
+	idlsedit = ", ".join(["{}{}".format(css, i) if i.startswith(".") else i for i in idls])	
+	return state, refurl, path, idlsedit
+def toControls(dialog, configs):  # 各コントロールに値を入力する。		
+	state, refurl, path, idlsedit = configs  # ダイアログ用データの取得。
+	dialog.getControl("RefUrl").setText(refurl)
+	dialog.getControl("OffLine").setState(state)
+	dialog.getControl("RefDir").setText(path)
+	dialog.getControl("IgnoredIdls").setText(idlsedit)			
+class ActionListener(unohelper.Base, XActionListener):
+	def __init__(self, dialog, consts):
+		self.dialog = dialog
+		self.consts = consts
+# 	@enableRemoteDebugging
+	def actionPerformed(self, actionevent):	
+		cmd = actionevent.ActionCommand
+		ctx, smgr, configurationprovider, css, properties, nodepath, simplefileaccess = self.consts
+		dialog = self.dialog
+		if cmd=="folderpicker":
+			fixedtext = dialog.getControl("RefDir")
+			path = fixedtext.getText()  # システムパスが返ってくる。
+			folderpicker = smgr.createInstanceWithContext("com.sun.star.ui.dialogs.FolderPicker", ctx)
+			if os.path.exists(path):  # pathが存在するとき
+				fileurl = unohelper.systemPathToFileUrl(path)  # システムパスをfileurlに変換する。
+				folderpicker.setDisplayDirectory(fileurl)  # フォルダ選択ダイアログに設定する。
+			folderpicker.setTitle(_("Select ref folder"))
+			if folderpicker.execute()==OK:
+				fileurl = folderpicker.getDirectory()
+				path = unohelper.fileUrlToSystemPath(fileurl) if simplefileaccess.exists(fileurl) else "Local API Reference does not exists."  # fileurlをシステムパスに変換する。
+				fixedtext.setText(path)
+		elif cmd=="restore":
+			node = PropertyValue(Name="nodepath", Value="{}Defaults".format(nodepath))
+			root = configurationprovider.createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", (node,))
+			configs = root.getPropertyValues(properties)  # コンポーネントデータノードからデフォルト値を取得する。	
+			toControls(dialog, toDialog(ctx, smgr, css, simplefileaccess, configs))  # 各コントロールに値を入力する。		
+	def disposing(self, eventobject):
+		pass	
+class MouseListener(unohelper.Base, XMouseListener):
+	def __init__(self, dialog):
+		self.dialog = dialog
+	def mousePressed(self, mouseevent):
+		pass			
+	def mouseReleased(self, mouseevent):
 		pass
-
-
-
-# 	def __init__(self, ctx, *args):
-# 		self.ctx = ctx
-# 		self.smgr = ctx.getServiceManager()
-# 		self.readConfig, self.writeConfig = createConfigAccessor(ctx, self.smgr, "/com.pq.blogspot.comp.ExtensionExample.ExtensionData/Leaves/MaximumPaperSize")  # config.xcsに定義していあるコンポーネントデータノードへのパス。
-# 		self.cfgnames = "Width", "Height"
-# 		self.defaults = self.readConfig("Defaults/Width", "Defaults/Height")
-# 	# XContainerWindowEventHandler
-# 	def callHandlerMethod(self, dialog, eventname, methodname):  # ブーリアンを返す必要あり。dialogはUnoControlDialog。 eventnameは文字列initialize, ok, backのいずれか。methodnameは文字列external_event。
-# 		if methodname==self.METHODNAME:  # Falseのときがありうる?
-# 			try:
-# 				if eventname=="initialize":  # オプションダイアログがアクティブになった時
-# 					maxwidth, maxheight = self.readConfig(*self.cfgnames)  # コンポーネントデータノードの値を取得。取得した値は文字列。
-# 					maxwidth = maxwidth or self.defaults[0]
-# 					maxheight = maxheight or self.defaults[1]
-# 					buttonlistener = ButtonListener(dialog, self.defaults)  # ボタンリスナーをインスタンス化。
-# 					addControl = controlCreator(self.ctx, self.smgr, dialog)  # オプションダイアログdialogにコントロールを追加する関数を取得。
-# 					addControl("FixedLine", {"PositionX": 5, "PositionY": 13, "Width": 250, "Height": 10, "Label": _("Maximum page size")})  # 文字付き水平線。
-# 					addControl("FixedText", {"PositionX": 11, "PositionY": 39, "Width": 49, "Height": 15, "Label": _("Width"), "NoLabel": True})  # 文字列。
-# 					addControl("NumericField", {"PositionX": 65, "PositionY": 39, "Width": 60, "Height": 15, "Spin": True, "ValueMin": 0, "Value": float(maxwidth), "DecimalAccuracy": 2, "HelpText": _("Width")})  # 上下ボタン付き数字枠。小数点2桁、floatに変換して値を代入。
-# 					addControl("NumericField", {"PositionX": 65, "PositionY": 64, "Width": 60, "Height": 15, "Spin": True, "ValueMin": 0, "Value": float(maxheight), "DecimalAccuracy": 2, "HelpText": _("Height")})  # 同上。
-# 					addControl("FixedText", {"PositionX": 11, "PositionY": 66, "Width": 49, "Height": 15, "Label": _("Height"), "NoLabel": True})  # 文字列。
-# 					addControl("FixedText", {"PositionX": 127, "PositionY": 42, "Width": 25, "Height": 15, "Label": "cm", "NoLabel": True})  # 文字列。
-# 					addControl("FixedText", {"PositionX": 127, "PositionY": 68, "Width": 25, "Height": 15, "Label": "cm", "NoLabel": True})  # 文字列。
-# 					addControl("Button", {"PositionX": 155, "PositionY": 39, "Width": 50, "Height": 15, "Label": _("~Default")}, {"setActionCommand": "width", "addActionListener": buttonlistener})  # ボタン。
-# 					addControl("Button", {"PositionX": 155, "PositionY": 64, "Width": 50, "Height": 15, "Label": _("~Default")}, {"setActionCommand": "height", "addActionListener": buttonlistener})  # ボタン。
-# 				elif eventname=="ok":  # OKボタンが押された時
-# 					maxwidth = dialog.getControl("NumericField1").getModel().Value  # NumericFieldコントロールから値を取得。
-# 					maxheight = dialog.getControl("NumericField2").getModel().Value  # NumericFieldコントロールから値を取得。
-# 					self.writeConfig(self.cfgnames, (str(maxwidth), str(maxheight)))  # 取得した値を文字列にしてコンポーネントデータノードに保存。
-# 				elif eventname=="back":  # 元に戻すボタンが押された時
-# 					maxwidth, maxheight = self.readConfig(*self.cfgnames)
-# 					dialog.getControl("NumericField1").getModel().Value= float(maxwidth)  # コンポーネントデータノードの値を取得。
-# 					dialog.getControl("NumericField2").getModel().Value= float(maxheight)  # コンポーネントデータノードの値を取得。
-# 			except:
-# 				traceback.print_exc()  # トレースバックはimport pydevd; pydevd.settrace(stdoutToServer=True, stderrToServer=True)でブレークして取得できるようになる。
-# 				return False
-# 		return True
-
-
-	
+# 	@enableRemoteDebugging
+	def mouseEntered(self, mouseevent):
+		control, dummy_controlmodel, name = eventSource(mouseevent)
+		if name == "FixedHyperlink1":
+			refurl = self.dialog.getControl("RefUrl").getText()
+			control.setURL("https://{}".format(refurl))
+	def mouseExited(self, mouseevent):
+		pass
+	def disposing(self, eventobject):
+		pass
+def eventSource(event):  # イベントからコントロール、コントロールモデル、コントロール名を取得。
+	control = event.Source  # イベントを駆動したコントロールを取得。
+	controlmodel = control.getModel()  # コントロールモデルを取得。
+	name = controlmodel.getPropertyValue("Name")  # コントロール名を取得。	
+	return control, controlmodel, name	
 def controlCreator(ctx, smgr, dialog):  # コントロールを追加する関数を返す。
 	dialogmodel = dialog.getModel()  # ダイアログモデルを取得。
 	def addControl(controltype, props, attrs=None):  # props: コントロールモデルのプロパティ、attr: コントロールの属性。
 		controlmodel = _createControlModel(controltype, props)  # コントロールモデルの生成。
 		dialogmodel.insertByName(props["Name"], controlmodel)  # ダイアログモデルにモデルを追加するだけでコントロールも作成される。
-		control = dialog.getControl(props["Name"])  # コントロールコンテナに追加された後のコントロールを取得。
 		if attrs is not None:  # Dialogに追加したあとでないと各コントロールへの属性は追加できない。
+			control = dialog.getControl(props["Name"])  # コントロールコンテナに追加された後のコントロールを取得。
 			for key, val in attrs.items():  # メソッドの引数がないときはvalをNoneにしている。
 				if val is None:
 					getattr(control, key)()
 				else:
 					getattr(control, key)(val)
-		return control
 	def _createControlModel(controltype, props):  # コントロールモデルの生成。
 		if not "Name" in props:
 			props["Name"] = _generateSequentialName(controltype)  # Nameがpropsになければ通し番号名を生成。

@@ -32,7 +32,7 @@ def createXcs(c):
 		nodetypes.append(Elem("info"))
 		nodetypes[-1].append(Elem("desc", text="Save IgnoredIDLs as text. 'com.sun.star' is omitted."))	
 		nodetypes.append(Elem("prop", {"oor:name": "IgnoredIDLs", "oor:type": "xs:string"}))
-		nodetypes[-1].append(Elem("value", text=".uno.XInterface,.lang.XTypeProvider,.lang.XServiceInfo,.uno.XWeak,.lang.XComponent, .lang.XInitialization,.lang.XMain,.uno.XAggregation,.lang.XUnoTunnel"))				
+		nodetypes[-1].append(Elem("value", text=".uno.XInterface,.lang.XTypeProvider,.lang.XServiceInfo,.uno.XWeak,.lang.XComponent,.lang.XInitialization,.lang.XMain,.uno.XAggregation,.lang.XUnoTunnel"))				
 		# コンポーネントノードの作成
 		root.append(Elem("component"))
 		root[-1].append(Elem("group", {"oor:name": "Leaves"}))
@@ -41,7 +41,7 @@ def createXcs(c):
 		# デフォルト値として書き換えないノード。
 		xunotreecommandsettings.append(Elem("info"))
 		xunotreecommandsettings[-1].append(Elem("desc", text="These nodes should not be rewritten with ConfigurationProvider for default."))	
-		xunotreecommandsettings.append(Elem("node-ref", {"oor:name": "Default", "oor:node-type": "nodetypes"}))
+		xunotreecommandsettings.append(Elem("node-ref", {"oor:name": "Defaults", "oor:node-type": "nodetypes"}))
 		# 設定値として書き換えるノード。
 		xunotreecommandsettings.append(Elem("info"))
 		xunotreecommandsettings[-1].append(Elem("desc", text="Rewrite these nodes with ConfigurationProvider."))	

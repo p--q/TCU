@@ -13,29 +13,11 @@ def defineIDLs():  # IDLの定義を設定する。継承しているUNOIDLのid
 	# インターフェイスの定義。多重継承するインターフェイスにはメソッドをつけない(慣習?)。
 	interface = UNOIDL("pq.XTcu")  # 定義するUNOIDLのフルパスでインスタンス化。XInterfaceは自動include。
 	interface.setSubs(  # 属性、メソッド、多重継承のインターフェイスなど
-		"interface XUnoTreeCommand",		
-		"interface XUnoTreeCommandSettings"
-		)
-	yield interface
-
-	# インターフェイスの定義
-	interface = UNOIDL("pq.XUnoTreeCommand")  # 定義するUNOIDLのフルパスでインスタンス化。XInterfaceは自動include。
-	interface.setSubs(  # 属性、メソッド、多重継承のインターフェイスなど
 		"sequence <string> tree([in] any Object)",		
 		"void itree([in] any Object)",	
 		"void wtree([in] any Object)"
 		)
 	yield interface
-
- 	# インターフェイスの定義
-	interface = UNOIDL("pq.XUnoTreeCommandSettings")  # 定義するUNOIDLのフルパスでインスタンス化。XInterfaceは自動include。
-	interface.setSubs(  # 属性、メソッド、多重継承のインターフェイスなど
-		"[attribute] boolean OffLine",
-		"[attribute] sequence <string> IgnoredIDLs",
-		"[attribute] string RefURL",
-		"[attribute] string RefDir"
-		)
-	yield interface   
 
 class UNOIDL:
 	def __init__(self, name):  # UNOIDLのフルパスを引数にする。

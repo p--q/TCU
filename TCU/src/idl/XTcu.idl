@@ -1,13 +1,13 @@
 #ifndef _pq_XTcu_idl_
 #define _pq_XTcu_idl_
 
-#include <XUnoTreeCommand.idl>
-#include <XUnoTreeCommandSettings.idl>
+#include <com/sun/star/uno/XInterface.idl>
 
 module pq {
 	interface XTcu {
-		interface XUnoTreeCommand;
-		interface XUnoTreeCommandSettings;
+		sequence <string> tree([in] any Object);
+		void itree([in] any Object);
+		void wtree([in] any Object);
 	};
 };
 

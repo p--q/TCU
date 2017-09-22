@@ -1,9 +1,10 @@
 eclipse.preferences.version=1
-encoding//helpers/connectoffice.py=utf-8
+encoding//src/pythonpath/inoxt/common.py=utf-8
 encoding//src/pythonpath/inoxt/component.py=utf-8
 encoding//src/pythonpath/inoxt/optiondialog.py=utf-8
 encoding//src/pythonpath/inoxt/unoinsp.py=utf-8
 encoding//src/pyunocomponent.py=utf-8
+encoding//tmp/pathsubstitutiontest_macro.py=utf-8
 encoding//tools/config.py=utf-8
 encoding//tools/createIDLs.py=utf-8
 encoding//tools/createOXT.py=utf-8

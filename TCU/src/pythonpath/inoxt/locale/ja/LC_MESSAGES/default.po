@@ -1,0 +1,71 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: optiondialog.py\n"
+"POT-Creation-Date: 2017-09-20 00:03+0900\n"
+"PO-Revision-Date: 2017-09-20 00:03+0900\n"
+"Last-Translator: p--q <pq.blogspot@gmail.com>\n"
+"Language-Team: p--q <pq.blogspot@gmail.com>\n"
+"Language: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: ../../..\n"
+
+#: ../../../optiondialog.py:35
+msgid "TCU - Tree Command for UNO"
+msgstr "TCU - UNOのツリーコマンド"
+
+#: ../../../optiondialog.py:36
+msgid "API Reference URL: https://"
+msgstr " APIリファレンスURL: https://"
+
+#: ../../../optiondialog.py:38
+msgid "Jump to this URL"
+msgstr "このURLへ飛ぶ"
+
+#: ../../../optiondialog.py:40
+msgid "~Use Local Reference"
+msgstr "ローカルリファレンスを使う(~U)"
+
+#: ../../../optiondialog.py:41
+msgid "Local Reference Path:"
+msgstr "ローカルリファレンスへのパス:"
+
+#: ../../../optiondialog.py:43
+msgid "~Browse"
+msgstr "検索(~B)"
+
+#: ../../../optiondialog.py:44
+msgid "Ignored Interfaces:"
+msgstr "無視するインターフェイス:"
+
+#: ../../../optiondialog.py:46
+msgid "~Restore Defaults"
+msgstr "デフォルトに戻す(~R)"
+
+#: ../../../optiondialog.py:92
+msgid "Select ref folder"
+msgstr "refフォルダを選択する"
+
+#: ../../../unoinsp.py:105
+msgid ""
+"The second argument should be specified as a tuple of IDL interface names."
+msgstr ""
+
+#: ../../../unoinsp.py:164
+msgid "There is no service or interface to support."
+msgstr ""
+
+#: ../../../unoinsp.py:176
+msgid ""
+" is not a service name or an interface name, so it is not supported yet."
+msgstr ""
+
+#: ../../../unoinsp.py:178
+msgid " is not an IDL name."
+msgstr ""
