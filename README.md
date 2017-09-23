@@ -18,6 +18,7 @@ Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with E
 	s = tcu.tree(arg)    # arg is a UNO object or a string of IDL full name.
 	print("\n".join(ｓ))　　# By joining the elements of the list with a line feed code we get the following tree.
 
+<tt>
 object
 ├─.container.XNameContainer
 │   │   void  insertByName( [in] string aName,
@@ -58,4 +59,4 @@ object
 │   	  .lang.XMultiComponentFactory  getServiceManager()
 │   	                           any  getValueByName( [in] string Name)
 └─.uno.XWeak
-	  	  .uno.XAdapter  queryAdapter()
+	  	  .uno.XAdapter  queryAdapter()</tt>
