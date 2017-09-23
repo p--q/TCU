@@ -1,4 +1,4 @@
-#!/opt/libreoffice5.2/program/python
+#!/opt/libreoffice5.4/program/python
 # -*- coding: utf-8 -*-
 import os, gettext
 from com.sun.star.beans import PropertyValue

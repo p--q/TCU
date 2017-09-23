@@ -1,45 +1,17 @@
-#!/opt/libreoffice5.2/program/python
+#!/opt/libreoffice5.4/program/python
 # -*- coding: utf-8 -*-
 import unohelper  # オートメーションには必須(必須なのはuno)。
-import os
-import sys
-from com.sun.star.container import NoSuchElementException
-def macro():
+def macro():  # オートメーションでFilePickerサービスをインスタンス化するとクラッシュする。
 	ctx = XSCRIPTCONTEXT.getComponentContext()  # コンポーネントコンテクストの取得。
 	smgr = ctx.getServiceManager()  # サービスマネージャーの取得。
 	doc = XSCRIPTCONTEXT.getDocument()
-	if not doc.supportsService("com.sun.star.text.TextDocument"):  # Writerドキュメントに結果を出力するのでWriterドキュメントであることを確認する。
-		raise RuntimeError("Please execute this macro with a Writer document.")  # Writerドキュメントでないときは終わる。
-	txts = []  # Writerドキュメントに出力する文字列を入れるリスト。
-	pathvals = "$(inst)/sdk/docs/idl/ref/",
-	pathsubstservice = smgr.createInstanceWithContext("com.sun.star.comp.framework.PathSubstitution", ctx)
-	for pathval in pathvals:
-		try:
-			url = pathsubstservice.substituteVariables(pathval, False)
-		except NoSuchElementException:
-			t = "{} is unknown variable!".format(pathval)
-			print(t, file=sys.stderr)
-			txts.append(t)
-			continue  # ループの次の周期に飛ぶ。
-		systempath = ";".join([os.path.normpath(unohelper.fileUrlToSystemPath(p)) if p.startswith("file://") else p for p in url.split(";")])  # 各パスについてシステムパスにして正規化する。
-		t = "{} : {}".format(pathval, systempath)
-		print(t)	
-		txts.append(t)
-	t = "These paths have been converted to system paths."
-	print(t)
-	txts.append(t)
-	doc.getText().setString("\n".join(txts))  # Writerドキュメントに出力。 
-	print("\nCheck the resubstitution function")  # 変数に置換する例。
-	path = pathsubstservice.getSubstituteVariableValue(pathvals[0])
-	path += "/test"
-	print("Path = {}".format(path))
-	resustpath = pathsubstservice.reSubstituteVariables(path)
-	print("Resubstituted path = {}".format(resustpath))
+	pycomp = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
+	pycomp.wtree(doc)
 g_exportedScripts = macro, #マクロセレクターに限定表示させる関数をタプルで指定。
 if __name__ == "__main__":  # オートメーションで実行するとき
 	import officehelper
 	from functools import wraps
-# 	import sys
+	import sys
 	from com.sun.star.beans import PropertyValue
 	from com.sun.star.script.provider import XScriptContext  
 	def connectOffice(func):  # funcの前後でOffice接続の処理
@@ -73,9 +45,14 @@ if __name__ == "__main__":  # オートメーションで実行するとき
 				return self.getDesktop().getCurrentComponent()
 		return ScriptContext(ctx)  
 	XSCRIPTCONTEXT = main()  # XSCRIPTCONTEXTを取得。
-	doc = XSCRIPTCONTEXT.getDocument()  # ドキュメントを取得。
-	if not hasattr(doc, "getCurrentController"):  # ドキュメント以外のとき。スタート画面も除外。
-		XSCRIPTCONTEXT.getDesktop().loadComponentFromURL("private:factory/swriter", "_blank", 0, ())  # Writerのドキュメントを開く。
-		while doc is None:  # ドキュメントのロード待ち。
-			doc = XSCRIPTCONTEXT.getDocument()
+	doc = XSCRIPTCONTEXT.getDocument()  # 現在開いているドキュメントを取得。
+# 	doctype = "scalc", "com.sun.star.sheet.SpreadsheetDocument"  # Calcドキュメントを開くとき。
+	doctype = "swriter", "com.sun.star.text.TextDocument"  # Writerドキュメントを開くとき。
+	if (doc is None) or (not doc.supportsService(doctype[1])):  # ドキュメントが取得できなかった時またはCalcドキュメントではない時
+		XSCRIPTCONTEXT.getDesktop().loadComponentFromURL("private:factory/{}".format(doctype[0]), "_blank", 0, ())  # ドキュメントを開く。ここでdocに代入してもドキュメントが開く前にmacro()が呼ばれてしまう。
+	flg = True
+	while flg:
+		doc = XSCRIPTCONTEXT.getDocument()  # 現在開いているドキュメントを取得。
+		if doc is not None:
+			flg = (not doc.supportsService(doctype[1]))  # ドキュメントタイプが確認できたらwhileを抜ける。
 	macro()

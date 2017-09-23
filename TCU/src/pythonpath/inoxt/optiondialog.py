@@ -1,4 +1,4 @@
-#!/opt/libreoffice5.2/program/python
+#!/opt/libreoffice5.4/program/python
 # -*- coding: utf-8 -*-
 import os, unohelper
 from com.sun.star.beans import PropertyValue
@@ -23,20 +23,22 @@ def dilaogHandler(consts, dialog, eventname):
 		addControl("Edit", {"Name": "RefUrl", "PositionX": 89, "PositionY": 22, "Width": 184, "Height": 15, "Text": refurl})
 		addControl("FixedHyperlink", {"PositionX": 89, "PositionY": 38, "Width": 184, "Height": 10, "Label": _("Jump to this URL"), "TextColor": 0x3D578C, "Align": 2}, {"addMouseListener": MouseListener(dialog)})  # ActionListenerをつけるとリンクが開かない。
 		addControl("GroupBox", {"PositionX": 5, "PositionY": 47, "Width": 268, "Height": 58, "Label": "Local Reference"})   
-		addControl("CheckBox", {"Name": "OffLine", "PositionX": 11, "PositionY": 56, "Width": 258, "Height": 8, "Label": _("~Use Local Reference"), "State": state}) 
+		addControl("CheckBox", {"Name": "OffLine", "PositionX": 11, "PositionY": 56, "Width": 258, "Height": 8, "Label": _("~Use Local Reference"), "State": state, "Enabled": False}) 
 		addControl("FixedText", {"PositionX": 11, "PositionY": 67, "Width": 258, "Height": 15, "Label": _("Local Reference Path:"), "NoLabel": True, "VerticalAlign": BOTTOM}) 
 		addControl("FixedText", {"Name": "RefDir" , "PositionX": 11, "PositionY": 82, "Width": 230, "Height": 15, "Label": path, "NoLabel": True, "VerticalAlign": BOTTOM})  
 		addControl("Button", {"PositionX": 242, "PositionY": 82, "Width": 27, "Height": 15, "Label": _("~Browse")}, {"setActionCommand": "folderpicker", "addActionListener": actionlistener})
 		addControl("FixedText", {"PositionX": 11, "PositionY": 107, "Width": 258, "Height": 15, "Label": _("Ignored Interfaces:"), "NoLabel": True, "VerticalAlign": MIDDLE}) 
 		addControl("Edit", {"Name": "IgnoredIdls", "PositionX": 5, "PositionY": 124, "Width": 268, "Height": 96, "MultiLine": True, "Text": idlsedit})  
 		addControl("Button", {"PositionX": 218, "PositionY": 224, "Width": 55, "Height": 15, "Label": _("~Restore Defaults")}, {"setActionCommand": "restore","addActionListener": actionlistener})
+		if os.path.exists(path):
+			dialog.getControl("OffLine").setEnable(True)
 	elif eventname=="ok":  # OKボタンが押された時
 		state = dialog.getControl("OffLine").getState()
 		refurl = dialog.getControl("RefUrl").getText()
-		path = dialog.getControl("RefDir").getText()  # システムパスが返ってくる。
+		path = dialog.getControl("RefDir").getText()  # システムパスが返ってくる。実存は入力時に確認済。
 		idlsedit = dialog.getControl("IgnoredIdls").getText()
 		offline = True if state==1 else False
-		refdir = unohelper.systemPathToFileUrl(path) if simplefileaccess.exists(path) else "" # システムパスをfileurlに変換する。
+		refdir = unohelper.systemPathToFileUrl(path)  # システムパスをfileurlに変換する。
 		idlstext = "".join(idlsedit.split()).replace(css, "")  # 空白、タブ、改行とcom.sun.starを除去。
 		configs = offline, refurl, refdir, idlstext  # コンポーネントデータノード用の値を取得。
 		node = PropertyValue(Name="nodepath", Value="{}OptionDialog".format(nodepath))
@@ -52,12 +54,15 @@ def toDialog(ctx, smgr, css, simplefileaccess, configs):  # ダイアログ向�
 	fileurl = pathsubstservice.substituteVariables(refdir, True)  # $(inst)を変換する。fileurlが返ってくる。
 	path = os.path.normpath(unohelper.fileUrlToSystemPath(fileurl)) if simplefileaccess.exists(fileurl) else "Local API Reference does not exists."  # fileurlをシステムパスに変換する。パスの実存を確認する。
 	idls = "".join(idlstext.split()).split(",")  # xmlがフォーマットされていると空白やタブが入ってくるのでそれを除去してリストにする。
-	idlsedit = ", ".join(["{}{}".format(css, i) if i.startswith(".") else i for i in idls])	
+	idlsedit = ", ".join("{}{}".format(css, i) if i.startswith(".") else i for i in idls)	
 	return state, refurl, path, idlsedit
 def toControls(dialog, configs):  # 各コントロールに値を入力する。		
 	state, refurl, path, idlsedit = configs  # ダイアログ用データの取得。
 	dialog.getControl("RefUrl").setText(refurl)
-	dialog.getControl("OffLine").setState(state)
+	checkbox = dialog.getControl("OffLine")
+	checkbox.setState(state)
+	if os.path.exists(path):
+		checkbox.setEnable(True)	
 	dialog.getControl("RefDir").setText(path)
 	dialog.getControl("IgnoredIdls").setText(idlsedit)			
 class ActionListener(unohelper.Base, XActionListener):
@@ -79,7 +84,13 @@ class ActionListener(unohelper.Base, XActionListener):
 			folderpicker.setTitle(_("Select ref folder"))
 			if folderpicker.execute()==OK:
 				fileurl = folderpicker.getDirectory()
-				path = unohelper.fileUrlToSystemPath(fileurl) if simplefileaccess.exists(fileurl) else "Local API Reference does not exists."  # fileurlをシステムパスに変換する。
+				checkbox = dialog.getControl("OffLine")
+				if simplefileaccess.exists(fileurl):
+					path = unohelper.fileUrlToSystemPath(fileurl)  # fileurlをシステムパスに変換する。
+					checkbox.setEnable(True)
+				else:
+					path = "Local API Reference does not exists."
+					checkbox.setEnable(False)
 				fixedtext.setText(path)
 		elif cmd=="restore":
 			node = PropertyValue(Name="nodepath", Value="{}Defaults".format(nodepath))
