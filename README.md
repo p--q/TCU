@@ -81,7 +81,7 @@ For automation
 
 <a href="https://github.com/p--q/TCU/blob/master/TCU/automationexample.py">TCU/automationexample.py</a>
 
-For macro (It contains the code for automation.)
+For macro (It also contains the code for automation.)
 
 <a href="https://github.com/p--q/TCU/blob/master/TCU/macroexample.py">TCU/macroexample.py</a>
 
