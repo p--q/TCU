@@ -170,3 +170,6 @@ For PyDev project interpreter, specify LibreOffice bundle Python.
   
     - Class for creating xml nodes.
   
+  - createProtocolHandlerXcu.py
+  
+    -  This script is not used with this extension.
