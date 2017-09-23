@@ -93,16 +93,16 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 ![2017-09-24_002602](https://user-images.githubusercontent.com/6964955/30774573-a9179286-a0bf-11e7-907f-2131c148ceae.png)
 
-- API Reference URL: Specify the address to <a href="https://api.libreoffice.org/docs/idl/ref/">LibreOffice: Main Page</a>.
+- **API Reference URL** : Specify the address to <a href="https://api.libreoffice.org/docs/idl/ref/">LibreOffice: Main Page</a>.
 
-- Use Local Reference: If checked, use anchors to the API reference to locally installed SDK.
+- **Use Local Reference** : If checked, use anchors to the API reference to locally installed SDK.
 
   - You can not check it unless you install SDK.
 
-- Ignored Interfaces: Enter the interface name that you do not want to output.
+- **Ignored Interfaces** : Enter the interface name that you do not want to output.
 
   - By default, it suppresses the output of the <a href="https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Core_Interfaces_to_Implement">core interfaces</a> that comes up frequently.
 
-Restore Defaults: Get the path to the API reference of locally installed SDK.
+- **Restore Defaults** : Get the path to the API reference of locally installed SDK.
 
   - It is useful when you want to switch the version of LibreOffice of API to use.
