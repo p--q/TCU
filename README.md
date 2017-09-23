@@ -106,3 +106,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 - **Restore Defaults** : Get the path to the API reference of locally installed SDK.
 
   - It is useful when you want to switch the version of LibreOffice of API to use.
+
+## Release notes
+
+2017-9-24 version 0.9.0 First release.
