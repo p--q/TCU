@@ -109,4 +109,9 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 ## Release notes
 
-2017-9-24 version 0.9.0 First release.
+2017-9-23 version 0.9.0 First release.
+
+
+## Tools
+
+<a href="https://github.com/p--q/TCU/tree/master/TCU/tools">TCU/TCU/tools</a> contains helper scripts for creating this extension.
