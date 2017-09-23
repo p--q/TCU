@@ -118,19 +118,41 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
   - config.py
   
-    - This script gets the necessary information for configuring extension from <a href="https://github.com/p--q/TCU/blob/master/TCU/src/config.ini">config.ini</a> and <a href="https://github.com/p--q/TCU/blob/master/TCU/src/pyunocomponent.py">pyunocomponent.py</a>.
+    - This script gets the necessary information for configuring the extension from <a href="https://github.com/p--q/TCU/blob/master/TCU/src/config.ini">config.ini</a> and <a href="https://github.com/p--q/TCU/blob/master/TCU/src/pyunocomponent.py">pyunocomponent.py</a>.
     
   - createIDLs.py
 
+    - Create idl files.
+    
+    - The content of the idl file is defined in the function defineIDLs() of this script.
+
   - createRDB.py
+  
+    - Compile the idl files and create a rdb file.
   
   - createXcs.py
   
+    - Create config.xcs file that defines the component schema node that stores the configurations for the extension.
+    
+    - The definition of the xcs file is defined in the function createXcs() of this script.
+  
   - createOptionsDialogXcu.py
+  
+    - Create OptionsDialog.xcs file to display the options page.
+    
+    - The definition of the xcs file is defined in the function createOptionsDialogXcu() of this script.
   
   - createXMLs.py
   
+  　　- Create manifest.xml, description.xml, .components files.
+    
+    - Since these files are created from the existing information, the definition in this script is unnecessary.
+  
+    - It must be executed when newly creating components, rdb, xcu, xcs files.
+  
   - createOXT.py
+  
+    - 
   
   - deployOXT.py
   
