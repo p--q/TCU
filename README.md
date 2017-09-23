@@ -116,6 +116,10 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 <a href="https://github.com/p--q/TCU/tree/master/TCU/tools">TCU/TCU/tools</a> contains helper scripts for creating this extension.
 
+  - config.py
+  
+  　　- This script gets the necessary information for configuring extension from <a href="https://github.com/p-- q/TCU/blob/master/TCU/src/config.ini">config.ini</a> and <a href = "https : //github.com/p-- q/TCU/blob/master/TCU/src/pyunocomponent.py ">pyunocomponent.py</a>.
+    
   - createIDLs.py
 
   - createRDB.py
