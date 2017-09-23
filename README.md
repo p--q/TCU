@@ -62,3 +62,11 @@ Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with E
 	│   	                           any  getValueByName( [in] string Name)
 	└─.uno.XWeak
 			  .uno.XAdapter  queryAdapter()
+
+## Script Examples
+
+For automation
+<a href="https://github.com/p--q/TCU/blob/master/TCU/automationexample.py">TCU/automationexample.py</a>
+
+For macro
+<a href="https://github.com/p--q/TCU/blob/master/TCU/macroexample.py">TCU/macroexample.py</a>
