@@ -1,0 +1,10 @@
+#ifndef _pq_Tcu_idl_
+#define _pq_Tcu_idl_
+
+#include <XTcu.idl>
+
+module pq {
+	service Tcu : XTcu;
+};
+
+#endif
