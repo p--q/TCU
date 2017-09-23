@@ -92,3 +92,5 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 ## Configuration
 
 ![2017-09-24_002602](https://user-images.githubusercontent.com/6964955/30774573-a9179286-a0bf-11e7-907f-2131c148ceae.png)
+
+- API Reference URL: Specify the address to <a href="https://api.libreoffice.org/docs/idl/ref/">LibreOffice: Main Page</a>.
