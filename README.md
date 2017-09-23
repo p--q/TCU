@@ -173,3 +173,5 @@ For PyDev project interpreter, specify LibreOffice bundle Python.
   - createProtocolHandlerXcu.py
   
     -  This script is not used with this extension.
+
+After creating the necessary file, execute createOXT.py and deployOXT.py in execAtOnce.py every time I edit the py file and check the operation.
