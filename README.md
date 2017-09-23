@@ -89,7 +89,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
     - Output the API tree of the document that launched the macro.
 
-## Configuration
+## Options
 
 ![2017-09-24_002602](https://user-images.githubusercontent.com/6964955/30774573-a9179286-a0bf-11e7-907f-2131c148ceae.png)
 
