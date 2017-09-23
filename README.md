@@ -98,3 +98,5 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 - Use Local Reference: If checked, use anchors to the API reference to locally installed SDK.
 
   - You can not check it unless you install SDK.
+
+- Ignored Interfaces: 
