@@ -144,7 +144,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
   
   - createXMLs.py
   
-  　　- Create manifest.xml, description.xml, .components files.
+    - Create manifest.xml, description.xml, .components files.
     
     - Since these files are created from the existing information, the definition in this script is unnecessary.
   
