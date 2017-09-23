@@ -81,8 +81,9 @@ For automation
 
 <a href="https://github.com/p--q/TCU/blob/master/TCU/automationexample.py">TCU/automationexample.py</a>
 
-For macro
+For macro (It contains the code for automation.)
 
 <a href="https://github.com/p--q/TCU/blob/master/TCU/macroexample.py">TCU/macroexample.py</a>
 
-After 'if __name__ == "__main__":', it is the code for automation.
+## Configuration
+
