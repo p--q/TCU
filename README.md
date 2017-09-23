@@ -100,3 +100,5 @@ In description.xml, LibreOffice-minimal-version is 5.2.
   - You can not check it unless you install SDK.
 
 - Ignored Interfaces: Enter the interface name that you do not want to output.
+
+  - By default, it suppresses the output of the <a href="https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Core_Interfaces_to_Implement">core interfaces</a> that comes up frequently.
