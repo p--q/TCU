@@ -99,4 +99,4 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
   - You can not check it unless you install SDK.
 
-- Ignored Interfaces: 
+- Ignored Interfaces: Enter the interface name that you do not want to output.
