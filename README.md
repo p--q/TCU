@@ -82,3 +82,5 @@ For automation
 For macro
 
 <a href="https://github.com/p--q/TCU/blob/master/TCU/macroexample.py">TCU/macroexample.py</a>
+
+After 'if __name__ == "__main__":', it is the code for automation.
