@@ -114,6 +114,10 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 ## Tools
 
+This repository is Eclipse's PyDev project.
+
+For PyDev project interpreter, specify LibreOffice bundle Python.
+
 <a href="https://github.com/p--q/TCU/tree/master/TCU/tools">TCU/TCU/tools</a> contains helper scripts for creating this extension.
 
   - config.py
@@ -152,16 +156,17 @@ In description.xml, LibreOffice-minimal-version is 5.2.
   
   - createOXT.py
   
-    - 
+    - Collect the files you have created and create an oxt file in the oxt folder.
   
   - deployOXT.py
   
+    -  Install this extension to LibreOffice specified as the interpreter.
+  
   - execAtOnce.py
+  
+    - Execute multiple scripts in order.
   
   - helper.py
   
-  - config.py
-  
-  - createOXT.py
-  
+    - Class for creating xml nodes.
   
