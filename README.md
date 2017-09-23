@@ -96,4 +96,5 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 - API Reference URL: Specify the address to <a href="https://api.libreoffice.org/docs/idl/ref/">LibreOffice: Main Page</a>.
 
 - Use Local Reference: If checked, use anchors to the API reference to locally installed SDK.
+
 　　- You can not check if SDK is not installed.
