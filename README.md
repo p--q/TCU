@@ -14,8 +14,6 @@ LibreOffice 5.2, 5.3, 5.4 in Ubuntu 14.04 32bit
 
 LibreOffice 5.4 in Windows 10 Home 64bit
 
-LibreOffice-minimal-version
-
 In description.xml, LibreOffice-minimal-version is 5.2.
 
 ## Usage
@@ -78,7 +76,9 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 ## Script Examples
 
 For automation
+
 <a href="https://github.com/p--q/TCU/blob/master/TCU/automationexample.py">TCU/automationexample.py</a>
 
 For macro
+
 <a href="https://github.com/p--q/TCU/blob/master/TCU/macroexample.py">TCU/macroexample.py</a>
