@@ -14,9 +14,9 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 ## Installation
 
-Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with Extension Manager.
+- Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with Extension Manager.
 
-Restart LibreOffice.
+- Restart LibreOffice.
 
 ## Usage
 
@@ -77,17 +77,17 @@ Restart LibreOffice.
 
 ## Script Examples
 
-For automation
+- For automation
 
-<a href="https://github.com/p--q/TCU/blob/master/TCU/automationexample.py">TCU/automationexample.py</a>
+  - <a href="https://github.com/p--q/TCU/blob/master/TCU/automationexample.py">TCU/automationexample.py</a>
 
-Output the API tree of the component context.
+    - Output the API tree of the component context.
 
-For macro (It also contains the code for automation.)
+- For macro (It also contains the code for automation.)
 
-<a href="https://github.com/p--q/TCU/blob/master/TCU/macroexample.py">TCU/macroexample.py</a>
+  - <a href="https://github.com/p--q/TCU/blob/master/TCU/macroexample.py">TCU/macroexample.py</a>
 
-Output the API tree of the document that launched the macro.
+    - Output the API tree of the document that launched the macro.
 
 ## Configuration
 
