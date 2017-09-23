@@ -33,6 +33,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 	# When component context is used as an argument.
 	# "com.sun.star" is omitted.
+	# The interface outputted once does not displayed.
 	object
 	├─.container.XNameContainer
 	│   │   void  insertByName( [in] string aName,
