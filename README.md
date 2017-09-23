@@ -2,10 +2,13 @@
 
 Output the API tee from the UNO object or IDL name.
 
+## Installing TCU extension
+
+Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with Extension Manager.
+
 ## Usage
-"""
-	pycomp = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
-	
+
+	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # 
 	pycomp.wtree(ctx)
-# 	print("\n".join(pycomp.tree(ctx)))
-"""
+	print("\n".join(pycomp.tree(ctx)))
+
