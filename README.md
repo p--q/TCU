@@ -4,11 +4,11 @@ Output the API tee from the UNO object or IDL name.
 
 ## System requirements
 
-The confirmed environment is as follows.
+- The confirmed environment is as follows.
 
-LibreOffice 5.2, 5.3, 5.4 in Ubuntu 14.04 32bit
+  - LibreOffice 5.2, 5.3, 5.4 in Ubuntu 14.04 32bit
 
-LibreOffice 5.4 in Windows 10 Home 64bit
+  - LibreOffice 5.4 in Windows 10 Home 64bit
 
 In description.xml, LibreOffice-minimal-version is 5.2.
 
