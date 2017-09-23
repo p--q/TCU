@@ -115,3 +115,27 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 ## Tools
 
 <a href="https://github.com/p--q/TCU/tree/master/TCU/tools">TCU/TCU/tools</a> contains helper scripts for creating this extension.
+
+  - createIDLs.py
+
+  - createRDB.py
+  
+  - createXcs.py
+  
+  - createOptionsDialogXcu.py
+  
+  - createXMLs.py
+  
+  - createOXT.py
+  
+  - deployOXT.py
+  
+  - execAtOnce.py
+  
+  - helper.py
+  
+  - config.py
+  
+  - createOXT.py
+  
+  
