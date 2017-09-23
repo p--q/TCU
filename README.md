@@ -102,7 +102,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 - **Ignored Interfaces** : Enter the interface name that you do not want to output.
 
-  - By default, it suppresses the output of the <a href="https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Core_Interfaces_to_Implement">core interfaces</a> that comes up frequently.
+  - By default, it suppresses the output of the <a href="https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Core_Interfaces_to_Implement">core interfaces</a> that come up frequently.
 
 - **Restore Defaults** : Get the path to the API reference of locally installed SDK.
 
