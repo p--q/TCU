@@ -2,9 +2,17 @@
 
 Output the API tee from the UNO object or IDL name.
 
-## Installing TCU extension
+## Installation
 
 Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with Extension Manager.
+
+## System requirements
+
+The confirmed environment is as follows.
+
+LibreOffice 5.2, 5.3, 5.4 in Ubuntu 14.04 
+
+LibreOffice 5.4 in Windows 10 Home
 
 ## Usage
 
