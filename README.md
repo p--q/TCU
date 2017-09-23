@@ -12,6 +12,7 @@ Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with E
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # smgr: service manager, ctx: component context
 	
 	# wtree() method outputs trees to the default browser.
+	# When outputting to the web browser, anchors are attached to the IDL reference.
 	tcu.wtree(arg)  # arg is a UNO object or a string of IDL full name.
 	
 	# tree() method returns a list of lines.
