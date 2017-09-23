@@ -13,7 +13,7 @@ Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with E
 	
 	# wtree() method outputs trees to the default browser.
 	# When outputting to the web browser, anchors are attached to the IDL reference.
-	tcu.wtree(arg)  # arg is a UNO object or a string of IDL full name.
+	tcu.wtree(arg)  # arg is an UNO object or a string of IDL full name.
 	
 	# tree() method returns a list of lines.
 	s = tcu.tree(arg)    # arg is a UNO object or a string of IDL full name.
