@@ -56,7 +56,6 @@ def createTree(args, obj):
 			return
 	args = flag, css, fns, st_omi, stack
 	generateOutputs(args)
-	return outputs
 def generateOutputs(args):  # 末裔から祖先を得て木を出力する。flagはオブジェクトが直接インターフェイスをもっているときにTrueになるフラグ。
 	reg_sqb = re.compile(r'\[\]')  # 型から角括弧ペアを取得する正規表現オブジェクト。
 	def _format_type(typ):  # 属性がシークエンスのとき[]の表記を修正。
@@ -66,7 +65,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 		return typ
 	flag, css, fns, st_omi, stack = args
 	if stack:  # 起点となるサービスかインターフェイスがあるとき。
-		lst_level = [1]*len(stack)  # self.stackの要素すべてについて階層を取得。
+		lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 		indent = "	  "  # インデントを設定。
 		m = 0  # 最大文字数を初期化。
 		inout_dic = {(True, False): "[in]", (False, True): "[out]", (True, True): "[inout]"}  # メソッドの引数のinout変換辞書。
