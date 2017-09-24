@@ -203,4 +203,6 @@ or
 
 **/opt/libreoffice5.4/program/python-core-3.5.0/lib/python3.5/site-packages**
 
+When you start Extension with PyDev Debug Server running in Eclipse, you can debug the method or function with the enableRemoteDebugging decorator.
 
+However, __init __ () can not be decorated by enableRemoteDebugging.
