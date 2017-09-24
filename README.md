@@ -194,6 +194,13 @@ After creating the necessary file, execute createOXT.py and deployOXT.py in exec
 
 2. Place sites.pth on the valid path of bundle Python.
 
-~/.local/lib/python3.5/site-packages
+    - When the bundle Python version is 3.5, the LibreOffice version is 5.4, Ubuntu 14.04, it becomes as follows.
+    
+    
+**~/.local/lib/python3.5/site-packages**
+
 or
-/opt/libreoffice5.4/program/python-core-3.5.0/lib/python3.5/site-packages
+
+**/opt/libreoffice5.4/program/python-core-3.5.0/lib/python3.5/site-packages**
+
+
