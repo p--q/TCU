@@ -29,9 +29,9 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	# When outputting to the web browser, anchors are attached to the IDL reference.
 	tcu.wtree(arg)  # arg is an UNO object or a string of IDL full name.
 	
-	# tree() method returns a list of lines.
+	# tree() method returns a tuple of lines.
 	s = tcu.tree(arg)    # arg is a UNO object or a string of IDL full name.
-	print("\n".join(ｓ))　　# By joining the elements of the list with a line feed code we get the following tree.
+	print("\n".join(ｓ))　　# By joining the elements of the tuple with a line feed code we get the following tree.
 
 	# When component context is used as an argument.
 	# "com.sun.star" is omitted.
