@@ -4,6 +4,7 @@ import re
 from com.sun.star.container import NoSuchElementException
 from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
 from .common import localization
+from .common import enableRemoteDebugging  # デバッグ用デコレーター
 def createTree(args, obj):
 	ctx, configurationprovider, css, fns, st_omi, outputs = args
 	global _  # グローバルな_を地域化関数に置換する。
@@ -56,6 +57,7 @@ def createTree(args, obj):
 			return
 	args = flag, css, fns, st_omi, stack
 	generateOutputs(args)
+# @enableRemoteDebugging
 def generateOutputs(args):  # 末裔から祖先を得て木を出力する。flagはオブジェクトが直接インターフェイスをもっているときにTrueになるフラグ。
 	reg_sqb = re.compile(r'\[\]')  # 型から角括弧ペアを取得する正規表現オブジェクト。
 	def _format_type(typ):  # 属性がシークエンスのとき[]の表記を修正。
