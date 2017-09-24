@@ -55,7 +55,7 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		outputs = []
 		fns = {key: outputs.append for key in fns_keys}
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
-		outputs = createTree(args, obj)
+		createTree(args, obj)
 		removeBranch(" ", outputs)  # 不要な枝を削除。置換する空白を渡す。
 		return outputs
 	def wtree(self, obj):
@@ -63,7 +63,7 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
-		outputs = createTree(args, obj)
+		createTree(args, obj)
 		removeBranch("&nbsp;", outputs)  # 不要な枝を削除。置換する空白を渡す。
 		outputs.append("</tt>")		
 		html = "<br>".join(outputs)
