@@ -190,4 +190,10 @@ After creating the necessary file, execute createOXT.py and deployOXT.py in exec
 
 <a href="https://github.com/p--q/TCU/blob/master/TCU/src/pythonpath/inoxt/common.py">pythonpath/inoxt/common.py</a> contains enableRemoteDebugging decorator to invoke debugger.
 
+1. Write the path to the folder containing pydevd.py on sites.pth.
 
+2. Place sites.pth on the valid path of bundle Python.
+
+~/.local/lib/python3.5/site-packages
+or
+/opt/libreoffice5.4/program/python-core-3.5.0/lib/python3.5/site-packages
