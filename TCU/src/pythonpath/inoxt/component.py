@@ -117,7 +117,6 @@ def getConfigs(consts):
 		prefix = "{}/".format(prefix)
 	idls = "".join(idlstext.split()).split(",")  # xmlがフォーマットされていると空白やタブが入ってくるのでそれを除去してリストにする。
 	idlsset = set(i.replace(css, "") for i in idls)  # "com.sun.star"を削る。
-# 	idlsset = set("{}{}".format(css, i) if i.startswith(".") else i for i in idls)  # "com.sun.star"を削る。
 	return ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset	
 def createFns(prefix, fns_keys, outputs):
 	reg_idl = re.compile(r'(?<!\w)\.[\w\.]+')  # IDL名を抽出する正規表現オブジェクト。
