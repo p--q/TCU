@@ -14,7 +14,9 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 ## Installation
 
-- Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with Extension Manager.
+- Click the Download button to download <a href="https://github.com/p--q/TCU/blob/master/TCU/oxt/TCU.oxt">TCU.oxt</a>. 
+
+- Add TCU.oxt with Extension Manager.
 
 - Restart LibreOffice.
 
@@ -112,6 +114,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2017-9-23 version 0.9.0 First release.
 
+2017-9-24 version 0.9.2 Fixed a serious bug. The output of the services were missing.
 
 ## Tools
 
@@ -154,6 +157,10 @@ For PyDev project interpreter, specify LibreOffice bundle Python.
     - Since these files are created from the existing information, the definition in this script is unnecessary.
   
     - It must be executed when newly creating components, rdb, xcu, xcs files.
+    
+    - The xml files output by this script are not formatted.
+    
+    - By default, createComponentsFile() and createManifestFile() are commented out. Although there are few opportunities to update .component file and manifest.xml created by these, description.xml needs to be created each time a extension version is updated.
   
   - createOXT.py
   
