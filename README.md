@@ -158,7 +158,7 @@ For PyDev project interpreter, specify LibreOffice bundle Python.
   
     - It must be executed when newly creating components, rdb, xcu, xcs files.
     
-    - By default, createComponentsFile() and createManifestFile() are commented out.Although there are few opportunities to update .component file and manifest.xml created by these, description.xml needs to be created each time a extension version is updated.
+    - By default, createComponentsFile() and createManifestFile() are commented out. Although there are few opportunities to update .component file and manifest.xml created by these, description.xml needs to be created each time a extension version is updated.
   
   - createOXT.py
   
