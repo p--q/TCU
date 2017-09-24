@@ -119,8 +119,8 @@ def createManifestFile(component_file, c):  # manifext.xmlファイルの作成
 def createXMLs(c):
 	component_file = "{}.components".format(c["projectname"])  # .componentsファイル名の作成。
 	os.chdir(c["src_path"])  # srcフォルダに移動。  
-	createComponentsFile(component_file, c)  # .componentファイルの作成。
-	createManifestFile(component_file, c)  # manifext.xmlファイルの作成
+# 	createComponentsFile(component_file, c)  # .componentファイルの作成。
+# 	createManifestFile(component_file, c)  # manifest.xmlファイルの作成
 	if os.path.exists("config.ini"):
 		createDescriptionFile(c)  # description.xmlファイルの作成。
 if __name__ == "__main__":
