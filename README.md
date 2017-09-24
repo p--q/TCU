@@ -185,3 +185,9 @@ For PyDev project interpreter, specify LibreOffice bundle Python.
     -  This script is not used with this extension.
 
 After creating the necessary file, execute createOXT.py and deployOXT.py in execAtOnce.py every time I edit the py file and check the operation.
+
+## How to start the debugger from inside the extension
+
+<a href="https://github.com/p--q/TCU/blob/master/TCU/src/pythonpath/inoxt/common.py">pythonpath/inoxt/common.py</a> contains enableRemoteDebugging decorator to invoke debugger.
+
+
