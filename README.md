@@ -116,6 +116,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2017-9-24 version 0.9.2 Fixed a serious bug. The output of the services were missing.
 
+2017-9-24 version 0.9.3 Fixed a bug. Default Ignored Interfaces were not used.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
