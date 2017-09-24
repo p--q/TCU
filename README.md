@@ -14,7 +14,9 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 ## Installation
 
-- Add <a href="https://github.com/p--q/TCU/tree/master/TCU/oxt">TCU.oxt</a> with Extension Manager.
+- Click the Download button to download <a href="https://github.com/p--q/TCU/blob/master/TCU/oxt/TCU.oxt">TCU.oxt</a>. 
+
+- Add TCU.oxt with Extension Manager.
 
 - Restart LibreOffice.
 
