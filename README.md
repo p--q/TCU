@@ -112,6 +112,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2017-9-23 version 0.9.0 First release.
 
+2017-9-23 version 0.9.2 Fixed a serious bug. The output of the services were missing.
 
 ## Tools
 
