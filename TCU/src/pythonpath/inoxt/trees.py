@@ -47,11 +47,11 @@ def createTree(args, obj):
 			stack = [tdm.getByHierarchicalName(i) for i in st_ss]  # TypeDescriptionオブジェクトに変換。
 			if stack: 
 				stack.sort(key=lambda x: x.Name, reverse=True)  # Name属性で降順に並べる。
-		if hasattr(obj, "getTypes"):  # サポートしているインターフェイスがある場合。
+		elif hasattr(obj, "getTypes"):  # サポートしているインターフェイスがある場合。
 			st_si = set(i.typeName.replace(css, "") for i in obj.getTypes())  # サポートインターフェイス名を集合型で取得。
 			lst_si = sorted(st_si.difference(st_omi), reverse=True)  # 除外するインターフェイス名を除いて降順のリストにする。
 			stack = [tdm.getByHierarchicalName("{}{}".format(css, i) if i.startswith(".") else i) for i in lst_si]  # TypeDescriptionオブジェクトに変換。CSSが必要。
-		if not (hasattr(obj, "getSupportedServiceNames") or hasattr(obj, "getTypes")):  # サポートするサービスやインターフェイスがないとき。
+		else:  # サポートするサービスやインターフェイスがないとき。
 			outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
 			return
 	args = flag, css, fns, st_omi, stack
