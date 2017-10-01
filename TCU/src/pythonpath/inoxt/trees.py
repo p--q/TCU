@@ -57,6 +57,7 @@ def createTree(args, obj):
 			if not stack:  # サポートするサービスがないとき
 				if st_si:  # サポートするインターフェイスがあるとき
 					stack = [tdm.getByHierarchicalName(i) for i in sorted(st_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
+					st_omi.update(st_si)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
 	if stack:  # 起点となるサービスかインターフェイスがあるとき。
 		args = css, fns, st_omi, stack, st_si, tdm, st_ss
 		generateOutputs(args)
