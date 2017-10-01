@@ -5,7 +5,7 @@ from com.sun.star.container import NoSuchElementException
 from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
 from .common import localization
 from .common import enableRemoteDebugging  # デバッグ用デコレーター
-@enableRemoteDebugging
+# @enableRemoteDebugging
 def createTree(args, obj):
 	ctx, configurationprovider, css, fns, st_omi, outputs = args
 	global _  # グローバルな_を地域化関数に置換する。
@@ -32,29 +32,31 @@ def createTree(args, obj):
 			return
 	else:  # objが文字列以外の時
 		outputs.append("object")  # treeの根に表示させるもの。
-		if hasattr(obj, "getSupportedServiceNames"):  # オブジェクトがサービスを持っているとき。
+		if hasattr(obj, "getTypes"):  # サービスを介さないインターフェイスがある場合。elifにしてはいけない。
+			st_si = set(i.typeName.replace(css, "") for i in obj.getTypes())  # サポートインターフェイス名を集合型で取得。
+			lst_si = sorted(st_si.difference(st_omi), reverse=True)  # 除外するインターフェイス名を除いて降順のリストにする。
+			stack = [tdm.getByHierarchicalName("{}{}".format(css, i) if i.startswith(".") else i) for i in lst_si]  # TypeDescriptionオブジェクトに変換。CSSが必要。
+		if hasattr(obj, "getSupportedServiceNames"):  # オブジェクトがサービスを持っているとき。elifにしてはいけない。
 			if hasattr(obj, "getTypes"):
 				flag = True  # サービスを介さないインターフェイスがあるときフラグを立てる。
 			st_ss = set(i for i in obj.getSupportedServiceNames() if _idl_check(i))  # サポートサービス名一覧からTypeDescriptionオブジェクトを取得できないサービス名を除いた集合を得る。
 			st_sups = set()  # 親サービスを入れる集合。
 			if len(st_ss) > 1:  # サポートしているサービス名が複数ある場合。
-				stack = [tdm.getByHierarchicalName(i) for i in st_ss]  # サポートサービスのTypeDescriptionオブジェクトをスタックに取得。
-				while stack:  # スタックがある間実行。
-					j = stack.pop()  # サービスのTypeDescriptionオブジェクトを取得。
+				stack2 = [tdm.getByHierarchicalName(i) for i in st_ss]  # サポートサービスのTypeDescriptionオブジェクトをスタックに取得。
+				while stack2:  # スタックがある間実行。
+					j = stack2.pop()  # サービスのTypeDescriptionオブジェクトを取得。
 					t_std = j.getMandatoryServices() + j.getOptionalServices()  # 親サービスのタプルを取得。
 					lst_std = [i for i in t_std if not i.Name in st_sups]  # 親サービスのTypeDescriptionオブジェクトのうち既に取得した親サービスにないものだけを取得。
-					stack.extend(lst_std)  # スタックに新たなサービスのTypeDescriptionオブジェクトのみ追加。
+					stack2.extend(lst_std)  # スタックに新たなサービスのTypeDescriptionオブジェクトのみ追加。
 					st_sups.update(i.Name for i in lst_std)  # 既に取得した親サービス名の集合型に新たに取得したサービス名を追加。
 			st_ss.difference_update(st_sups)  # オブジェクトのサポートサービスのうち親サービスにないものだけにする=これがサービスの末裔。
-			
-			
-			stack = [tdm.getByHierarchicalName(i) for i in st_ss]  # TypeDescriptionオブジェクトに変換。
-			if stack: 
-				stack.sort(key=lambda x: x.Name, reverse=True)  # Name属性で降順に並べる。
-		elif hasattr(obj, "getTypes"):  # サポートしているインターフェイスがある場合。
-			st_si = set(i.typeName.replace(css, "") for i in obj.getTypes())  # サポートインターフェイス名を集合型で取得。
-			lst_si = sorted(st_si.difference(st_omi), reverse=True)  # 除外するインターフェイス名を除いて降順のリストにする。
-			stack = [tdm.getByHierarchicalName("{}{}".format(css, i) if i.startswith(".") else i) for i in lst_si]  # TypeDescriptionオブジェクトに変換。CSSが必要。
+			if st_ss:  # サービス名があるとき
+				lst_ss = sorted(st_ss, reverse=True)  # サービス名の集合を降順のリストにする。
+				lst_std = [tdm.getByHierarchicalName(i) for i in lst_ss]  # TypeDescriptionオブジェクトに変換。
+				if stack:  # すでにインターフェイスがスタックに取得されている時。
+					stack.extend(lst_std)  # インターフェイスをスタックの先頭にもってきて、まずサービスから出力して、それでも出力されなかったインターフェイスのみ出力するようにする。
+				else:
+					stack = lst_std
 		else:  # サポートするサービスやインターフェイスがないとき。
 			outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
 			return
