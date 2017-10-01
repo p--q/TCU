@@ -7,7 +7,8 @@ from .common import localization
 from .common import enableRemoteDebugging  # デバッグ用デコレーター
 # @enableRemoteDebugging
 def createTree(args, obj):
-	ctx, configurationprovider, css, fns, st_omi, outputs = args
+	ctx, configurationprovider, css, fns, st_omi, outputs = args  # st_omi: スタックに追加しないインターフェイス名の集合。
+	st_ss = set()  # スタックに追加しいないサービス名の集合。
 	global _  # グローバルな_を地域化関数に置換する。
 	_ = localization(configurationprovider)  # グローバルな_を地域化関数に置換。
 	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
@@ -23,9 +24,12 @@ def createTree(args, obj):
 			outputs.append(_("{} is not an IDL name.".format(idl)))  # はIDL名ではありません。
 			return
 		typcls = j.getTypeClass()  # jのタイプクラスを取得。
-		if typcls == INTERFACE or typcls == SERVICE:  # jがサービスかインターフェイスのとき。
-			outputs.append(idl)  # treeの根にIDL名を表示
-			stack = [j]  # TypeDescriptionオブジェクトをスタックに取得
+		outputs.append(idl)  # treeの根にIDL名を表示
+		stack = [j]  # TypeDescriptionオブジェクトをスタックに取得			
+		if typcls == INTERFACE:  # インターフェイスの時
+			st_omi.add(idl)  # スタックに追加しないインターフェイス名に追加する。
+		elif typcls == SERVICE:  # サービスの時
+			st_ss.add(idl)  # スタックに追加しないサービス名に追加する。			
 		else:  # サービスかインターフェイス以外のときは未対応。
 			outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.".format(idl)))  # はサービス名またはインターフェイス名ではないので未対応です。
 			return
@@ -64,7 +68,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 		for dummy in range(n):  # 角括弧の数だけ繰り返し。
 			typ = typ.replace("]", "", 1) + "]" 
 		return typ
-	css, fns, st_omi, stack, st_si, tdm, st_ss = args  # st_si: すでに出力したサービス名をいれる集合(css付き)、st_ss: サービスを介さないインターフェイス名を含んだ集合(css付き)。
+	css, fns, st_omi, stack, st_si, tdm, st_ss = args
 	lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 	indent = "	  "  # インデントを設定。
 	m = 0  # 最大文字数を初期化。
@@ -160,8 +164,16 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 			elif typcls == SERVICE:  # jがサービスのときtdはXServiceTypeDescriptionインターフェイスをもつ。
 				branch.append(j.Name.replace(css, ""))  # サービス名をbranchの2番要素に追加。
 				t_std = j.getMandatoryServices() + j.getOptionalServices()  # 親サービスを取得。
-				stack.extend(sorted(list(t_std), key=lambda x: x.Name, reverse=True))  # 親サービス名で降順に並べてサービスのTypeDescriptionオブジェクトをスタックに追加。
-				lst_level.extend(level + 1 for i in t_std)  # 階層を取得。
+				
+				lst_std = [i for i in t_std if not i.Name in st_ss]  # st_ssを除く。
+				stack.extend(sorted(lst_std, key=lambda x: x.Name, reverse=True))  # 親サービス名で降順に並べてサービスのTypeDescriptionオブジェクトをスタックに追加。
+				lst_level.extend(level + 1 for i in lst_std)  # 階層を取得。
+				
+# 				stack.extend(sorted(list(t_std), key=lambda x: x.Name, reverse=True))  # 親サービス名で降順に並べてサービスのTypeDescriptionオブジェクトをスタックに追加。
+# 				lst_level.extend(level + 1 for i in t_std)  # 階層を取得。
+				
+				st_ss.update(i.Name for i in lst_std)  # すでにでてきたサービス名をst_ssに追加して次は使わないようにする。
+				
 				itd = j.getInterface()  # new-styleサービスのインターフェイスを取得。TypeDescriptionオブジェクト。
 				if itd:  # new-styleサービスのインターフェイスがあるとき。
 					t_itd = itd,  # XInterfaceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト。
