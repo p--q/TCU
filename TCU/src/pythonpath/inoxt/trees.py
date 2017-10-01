@@ -9,6 +9,8 @@ from .common import enableRemoteDebugging  # デバッグ用デコレーター
 def createTree(args, obj):
 	ctx, configurationprovider, css, fns, st_omi, outputs = args  # st_omi: スタックに追加しないインターフェイス名の集合。
 	st_ss = set()  # スタックに追加しいないサービス名の集合。
+	stack = []  # スタックを初期化。
+	st_si = set()  #  サポートインターフェイス名の集合。
 	global _  # グローバルな_を地域化関数に置換する。
 	_ = localization(configurationprovider)  # グローバルな_を地域化関数に置換。
 	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
@@ -164,16 +166,10 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 			elif typcls == SERVICE:  # jがサービスのときtdはXServiceTypeDescriptionインターフェイスをもつ。
 				branch.append(j.Name.replace(css, ""))  # サービス名をbranchの2番要素に追加。
 				t_std = j.getMandatoryServices() + j.getOptionalServices()  # 親サービスを取得。
-				
 				lst_std = [i for i in t_std if not i.Name in st_ss]  # st_ssを除く。
 				stack.extend(sorted(lst_std, key=lambda x: x.Name, reverse=True))  # 親サービス名で降順に並べてサービスのTypeDescriptionオブジェクトをスタックに追加。
 				lst_level.extend(level + 1 for i in lst_std)  # 階層を取得。
-				
-# 				stack.extend(sorted(list(t_std), key=lambda x: x.Name, reverse=True))  # 親サービス名で降順に並べてサービスのTypeDescriptionオブジェクトをスタックに追加。
-# 				lst_level.extend(level + 1 for i in t_std)  # 階層を取得。
-				
 				st_ss.update(i.Name for i in lst_std)  # すでにでてきたサービス名をst_ssに追加して次は使わないようにする。
-				
 				itd = j.getInterface()  # new-styleサービスのインターフェイスを取得。TypeDescriptionオブジェクト。
 				if itd:  # new-styleサービスのインターフェイスがあるとき。
 					t_itd = itd,  # XInterfaceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト。

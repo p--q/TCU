@@ -4,11 +4,10 @@
 	xmlns:d="http://openoffice.org/extensions/description/2006"
 	xmlns:l="http://libreoffice.org/extensions/description/2011"
 	xmlns:xlink="http://www.w3.org/1999/xlink">
-	<dependencies>
-		<l:LibreOffice-minimal-version
-			d:name="LibreOffice 5.2"
-			value="5.2" />
-	</dependencies>
+	<identifier value="pq.Tcu" />
+	<icon>
+		<default xlink:href="icons/extension.png" />
+	</icon>
 	<registration>
 		<simple-license
 			accept-by="admin"
@@ -19,12 +18,10 @@
 				xlink:href="LICENSE" />
 		</simple-license>
 	</registration>
-	<identifier value="pq.Tcu" />
-	<publisher>
-		<name
-			lang="en"
-			xlink:href="https://github.com/p--q/TCU">p--q</name>
-	</publisher>
+	<display-name>
+		<name lang="en">TCU - Tree Command for UNO</name>
+	</display-name>
+	<platform value="all" />
 	<extension-description>
 		<src
 			lang="en"
@@ -33,12 +30,15 @@
 			lang="ja"
 			xlink:href="descriptions/description_ja.txt" />
 	</extension-description>
-	<version value="0.9.3" />
-	<icon>
-		<default xlink:href="icons/extension.png" />
-	</icon>
-	<platform value="all" />
-	<display-name>
-		<name lang="en">TCU - Tree Command for UNO</name>
-	</display-name>
+	<publisher>
+		<name
+			lang="en"
+			xlink:href="https://github.com/p--q/TCU">p--q</name>
+	</publisher>
+	<dependencies>
+		<l:LibreOffice-minimal-version
+			d:name="LibreOffice 5.2"
+			value="5.2" />
+	</dependencies>
+	<version value="0.9.4" />
 </description>
