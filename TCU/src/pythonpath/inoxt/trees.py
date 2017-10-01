@@ -47,12 +47,12 @@ def createTree(args, obj):
 				lst_ss = sorted(st_ss, reverse=True)  # サービス名の集合を降順のリストにする。
 				stack = [tdm.getByHierarchicalName(i) for i in lst_ss]  # TypeDescriptionオブジェクトに変換してスタックに取得。
 		if hasattr(obj, "getTypes"):  # サービスを介さないインターフェイスがある場合。elifにしてはいけない。
-			st_si = set(i.typeName.replace(css, "") for i in obj.getTypes()).difference(st_omi)  # サポートインターフェイス名を集合型で取得して、除外するインターフェイス名を除く。
+			st_si = set(i.typeName for i in obj.getTypes()).difference(st_omi)  # サポートインターフェイス名を集合型で取得して、除外するインターフェイス名を除く。
 			if not stack:  # サポートするサービスがないとき
 				if st_si:  # サポートするインターフェイスがあるとき
-					stack = [tdm.getByHierarchicalName("{}{}".format(css, i) if i.startswith(".") else i) for i in sorted(st_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。CSSが必要。
+					stack = [tdm.getByHierarchicalName(i) for i in sorted(st_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 	if stack:  # 起点となるサービスかインターフェイスがあるとき。
-		args = css, fns, st_omi, stack, st_si, tdm
+		args = css, fns, st_omi, stack, st_si, tdm, st_ss
 		generateOutputs(args)
 	else:
 		outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
@@ -64,7 +64,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 		for dummy in range(n):  # 角括弧の数だけ繰り返し。
 			typ = typ.replace("]", "", 1) + "]" 
 		return typ
-	css, fns, st_omi, stack, st_si, tdm = args
+	css, fns, st_omi, stack, st_si, tdm, st_ss = args  # st_si: すでに出力したサービス名をいれる集合(css付き)、st_ss: サービスを介さないインターフェイス名を含んだ集合(css付き)。
 	lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 	indent = "	  "  # インデントを設定。
 	m = 0  # 最大文字数を初期化。
@@ -170,10 +170,10 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 				t_spd = j.Properties  # サービスからXPropertyTypeDescriptionインターフェイスをもつオブジェクトのタプルを取得。
 				fns["SERVICE"]("".join(branch))  # 枝をつけて出力。
 		if t_itd:  # 親インターフェイスがあるとき。(TypeDescriptionオブジェクト)
-			lst_itd = [i for i in t_itd if not i.Name.replace(css, "") in st_omi]  # st_omiを除く。
+			lst_itd = [i for i in t_itd if not i.Name in st_omi]  # st_omiを除く。
 			stack.extend(sorted(lst_itd, key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。
 			lst_level.extend(level + 1 for i in lst_itd)  # 階層を取得。
-			st_omi.update(i.Name.replace(css, "") for i in lst_itd)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
+			st_omi.update(i.Name for i in lst_itd)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
 			t_itd = tuple()  # インターフェイスのTypeDescriptionオブジェクトの入れ物を初期化。
 		if t_md:  # インターフェイス属性とメソッドがあるとき。
 			stack.extend(sorted(t_md, key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。
@@ -187,8 +187,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 			t_spd = tuple()  # サービス属性のTypeDescriptionオブジェクトの入れ物を初期化。
 		if not stack:  # スタックが尽きた時
 			st_rem = st_si.difference(st_omi)  # まだでてきていないインターフェイスがサービスを介さないインターフェイス。
-			if st_rem:  # まだインターフェイスが残っているとき
-				stack =  [tdm.getByHierarchicalName("{}{}".format(css, i) if i.startswith(".") else i) for i in sorted(st_rem, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。CSSが必要。
+			if st_rem:  # まだ出力していないインターフェイスが残っているとき
+				stack =  [tdm.getByHierarchicalName(i) for i in sorted(st_rem, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。CSSが必要。
 				lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 				st_omi.update(st_rem)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
-
