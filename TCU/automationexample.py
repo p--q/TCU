@@ -24,7 +24,9 @@ try:
 	pycomp = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
 
 	pycomp.wtree(ctx)
-	print("\n".join(pycomp.tree(ctx)))
+	print("\n".join(pycomp.tree("com.sun.star.frame.Desktop")))
+
+
 
 except:
 	traceback.print_exc()
