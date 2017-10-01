@@ -17,7 +17,7 @@ def deployOXT(c):
         subprocess.run(args) 
         subprocess.run([unopkg, "gui"])
         print("If the error message is not, {} deployment to {} has been successful.".format(oxt_path, os.path.basename(uno_path)))
-        print("Restarting the OS may be necessary depending on the error.")
+        print("If the error message, delete the extension and restart LibreOffice.")
     else:
         print("There is no oxt file.")
 if __name__ == "__main__":
