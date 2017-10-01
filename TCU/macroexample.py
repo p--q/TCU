@@ -5,8 +5,17 @@ def macro():  # オートメーションでFilePickerサービスをインスタ
 	ctx = XSCRIPTCONTEXT.getComponentContext()  # コンポーネントコンテクストの取得。
 	smgr = ctx.getServiceManager()  # サービスマネージャーの取得。
 	doc = XSCRIPTCONTEXT.getDocument()
-	pycomp = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
-	pycomp.wtree(doc)
+	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
+# 	tcu.wtree(doc)
+	# for Calc。
+	sheets = doc.getSheets()
+	sheet = sheets[0]	
+	cell = sheet["A1"]
+	tcu.wtree(cell)  # サービスが重複している例。
+	
+	
+
+
 g_exportedScripts = macro, #マクロセレクターに限定表示させる関数をタプルで指定。
 if __name__ == "__main__":  # オートメーションで実行するとき
 	import officehelper
