@@ -29,9 +29,9 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	# When outputting to the web browser, anchors are attached to the IDL reference.
 	tcu.wtree(arg)  # arg is an UNO object or a string of IDL full name.
 	
-	# tree() method returns a list of lines.
+	# tree() method returns a tuple of lines.
 	s = tcu.tree(arg)    # arg is a UNO object or a string of IDL full name.
-	print("\n".join(ｓ))　　# By joining the elements of the list with a line feed code we get the following tree.
+	print("\n".join(ｓ))　　# By joining the elements of the tuple with a line feed code we get the following tree.
 
 	# When component context is used as an argument.
 	# "com.sun.star" is omitted.
@@ -116,6 +116,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2017-9-24 version 0.9.2 Fixed a serious bug. The output of the services were missing.
 
+2017-9-24 version 0.9.3 Fixed a bug. Default Ignored Interfaces were not used.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
@@ -183,3 +185,24 @@ For PyDev project interpreter, specify LibreOffice bundle Python.
     -  This script is not used with this extension.
 
 After creating the necessary file, execute createOXT.py and deployOXT.py in execAtOnce.py every time I edit the py file and check the operation.
+
+## How to start the debugger from inside the extension
+
+<a href="https://github.com/p--q/TCU/blob/master/TCU/src/pythonpath/inoxt/common.py">pythonpath/inoxt/common.py</a> contains enableRemoteDebugging decorator to invoke debugger.
+
+1. Write the path to the folder containing pydevd.py on sites.pth.
+
+2. Place sites.pth on the valid path of bundle Python.
+
+    - When the bundle Python version is 3.5, the LibreOffice version is 5.4, Ubuntu 14.04, it becomes as follows.
+    
+    
+**~/.local/lib/python3.5/site-packages**
+
+or
+
+**/opt/libreoffice5.4/program/python-core-3.5.0/lib/python3.5/site-packages**
+
+When you start Extension with PyDev Debug Server running in Eclipse, you can debug the method or function with the enableRemoteDebugging decorator.
+
+However, __init __ () can not be decorated by enableRemoteDebugging.
