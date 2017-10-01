@@ -5,6 +5,7 @@ from com.sun.star.container import NoSuchElementException
 from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
 from .common import localization
 from .common import enableRemoteDebugging  # デバッグ用デコレーター
+@enableRemoteDebugging
 def createTree(args, obj):
 	ctx, configurationprovider, css, fns, st_omi, outputs = args
 	global _  # グローバルな_を地域化関数に置換する。
@@ -45,6 +46,8 @@ def createTree(args, obj):
 					stack.extend(lst_std)  # スタックに新たなサービスのTypeDescriptionオブジェクトのみ追加。
 					st_sups.update(i.Name for i in lst_std)  # 既に取得した親サービス名の集合型に新たに取得したサービス名を追加。
 			st_ss.difference_update(st_sups)  # オブジェクトのサポートサービスのうち親サービスにないものだけにする=これがサービスの末裔。
+			
+			
 			stack = [tdm.getByHierarchicalName(i) for i in st_ss]  # TypeDescriptionオブジェクトに変換。
 			if stack: 
 				stack.sort(key=lambda x: x.Name, reverse=True)  # Name属性で降順に並べる。
