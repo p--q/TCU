@@ -100,7 +100,7 @@ def removeBranch(s, outputs):  # 不要な枝を削除。引数は半角スペ�
 				break
 def getConfigs(consts):
 	ctx, smgr, configurationprovider, css, properties, nodepath, simplefileaccess = consts
-	fns_keys = "SERVICE", "INTERFACE", "PROPERTY", "INTERFACE_METHOD", "INTERFACE_ATTRIBUTE"  # fnsのキーのタプル。
+	fns_keys = "SERVICE", "INTERFACE", "PROPERTY", "INTERFACE_METHOD", "INTERFACE_ATTRIBUTE", "NOLINK"  # fnsのキーのタプル。
 	node = PropertyValue(Name="nodepath", Value="{}OptionDialog".format(nodepath))
 	root = configurationprovider.createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", (node,))
 	offline, refurl, refdir, idlstext = root.getPropertyValues(properties)  # コンポーネントデータノードから値を取得する。		
@@ -132,7 +132,7 @@ def createFns(prefix, fns_keys, outputs):
 			outputs.append(item_with_branch.replace(" ", "&nbsp;").replace(idl[0], lnk))  # 半角スペースを置換後にサービス名をアンカータグに置換。
 		else:
 			outputs.append(item_with_branch.replace(" ", "&nbsp;"))  # 半角スペースを置換。	
-	def _fn(item_with_branch):  # サービス名とインターフェイスを出力するときの関数。
+	def _fn(item_with_branch):  # サービス名とインターフェイス名以外を出力するときの関数。
 		idl = set(reg_idl.findall(item_with_branch)) # 正規表現でIDL名を抽出する。
 		inf = reg_i.findall(item_with_branch) # 正規表現でインターフェイス名を抽出する。
 		exc = reg_e.findall(item_with_branch) # 正規表現で例外名を抽出する。
@@ -150,7 +150,10 @@ def createFns(prefix, fns_keys, outputs):
 		_make_link("service", reg_idl, item_with_branch)
 	def _fn_i(item_with_branch):  # インターフェイス名にアンカータグをつける。
 		_make_link("interface", reg_i, item_with_branch)	
-	fns = {key: _fn for key in fns_keys[2:]}
+	def _fn_nolink(item_with_branch):
+		outputs.append(item_with_branch.replace(" ", "&nbsp;"))
+	fns = {key: _fn for key in fns_keys[2:5]}
 	fns[fns_keys[0]] = _fn_s		
 	fns[fns_keys[1]] = _fn_i
+	fns[fns_keys[5]] = _fn_nolink
 	return fns

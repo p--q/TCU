@@ -10,20 +10,23 @@ def createTree(args, obj):
 	ctx, configurationprovider, css, fns, st_omi, outputs = args  # st_omi: スタックに追加しないインターフェイス名の集合。
 	st_ss = set()  # スタックに追加しいないサービス名の集合。
 	stack = []  # スタックを初期化。
-	st_si = set()  #  サポートインターフェイス名の集合。
+	st_si = False  #  サポートインターフェイス名の集合。
+	st_nontyps = set()  # TypeDescriptionオブジェクトを取得できないサービス。
 	global _  # グローバルな_を地域化関数に置換する。
 	_ = localization(configurationprovider)  # グローバルな_を地域化関数に置換。
 	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
 	def _idl_check(idl): # IDL名からTypeDescriptionオブジェクトを取得。
 		try:
 			return tdm.getByHierarchicalName(idl)  # IDL名からTypeDescriptionオブジェクトを取得。
-		except NoSuchElementException:
+		except NoSuchElementException:  # TypeDescriptionを取得できないIDLのとき
+			st_nontyps.add(idl)  # 最後に枝を出す。
+			st_si = True  # 縦枝が最後まで伸びるようにしておく。
 			return None
 	if isinstance(obj, str): # objが文字列(IDL名)のとき
 		idl = "{}{}".format(css, obj) if obj.startswith(".") else obj  # 先頭が.で始まっているときcom.sun.starが省略されていると考えて、com.sun.starを追加する。
 		j = _idl_check(idl)  # IDL名からTypeDescriptionオブジェクトを取得。
 		if j is None:  # TypeDescriptionオブジェクトを取得できなかったとき。
-			outputs.append(_("{} is not an IDL name.".format(idl)))  # はIDL名ではありません。
+			outputs.append(_("Can not get TypeDescription object of {}.".format(idl)))  # {}のTypeDescriptionが取得できません。
 			return
 		typcls = j.getTypeClass()  # jのタイプクラスを取得。
 		outputs.append(idl)  # treeの根にIDL名を表示
@@ -59,7 +62,7 @@ def createTree(args, obj):
 					stack = [tdm.getByHierarchicalName(i) for i in sorted(st_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 					st_omi.update(st_si)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
 	if stack:  # 起点となるサービスかインターフェイスがあるとき。
-		args = css, fns, st_omi, stack, st_si, tdm, st_ss
+		args = css, fns, st_omi, stack, st_si, tdm, st_ss, st_nontyps, obj
 		generateOutputs(args)
 	else:
 		outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
@@ -71,7 +74,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 		for dummy in range(n):  # 角括弧の数だけ繰り返し。
 			typ = typ.replace("]", "", 1) + "]" 
 		return typ
-	css, fns, st_omi, stack, st_si, tdm, st_ss = args
+	css, fns, st_omi, stack, st_si, tdm, st_ss, st_nontyps, obj = args
 	lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 	indent = "	  "  # インデントを設定。
 	m = 0  # 最大文字数を初期化。
@@ -84,15 +87,15 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 		level = lst_level.pop()  # jの階層を取得。
 		typcls = j.getTypeClass()  # jのタイプクラスを取得。
 		branch = ["", ""]  # 枝をリセット。jがサービスまたはインターフェイスのときjに直接つながる枝は1番の要素に入れる。それより左の枝は0番の要素に加える。
-		if level > 1:  # 階層が2以上のとき。
+		if level>1:  # 階層が2以上のとき。
 			p = 1  # 処理開始する階層を設定。
 			if st_si:  # サービスを介さないインターフェイスがあるとき
 				branch[0] = "│   "  # 階層1に立枝をつける。
 				p = 2  # 階層2から処理する。
 			for i in range(p, level):  # 階層iから出た枝が次行の階層i-1の枝になる。
 				branch[0] += "│   " if i in lst_level else indent  # iは枝の階層ではなく、枝のより上の行にあるその枝がでた階層になる。
-		if typcls == INTERFACE or typcls == SERVICE:  # jがサービスかインターフェイスのとき。
-			if level == 1 and st_si:  # 階層1かつサービスを介さないインターフェイスがあるとき
+		if typcls==INTERFACE or typcls==SERVICE:  # jがサービスかインターフェイスのとき。
+			if level==1 and st_si:  # 階層1かつサービスを介さないインターフェイスがあるとき
 				branch[1] = "├─"  # 階層1のときは下につづく分岐をつける。
 			else:
 				branch[1] = "├─" if level in lst_level else "└─"  # スタックに同じ階層があるときは"├─" 。
@@ -100,8 +103,8 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 			branch[1] = indent  # 横枝は出さない。
 			if level in lst_level:  # スタックに同じ階層があるとき。
 				typcls2 = stack[lst_level.index(level)].getTypeClass()  # スタックにある同じ階層のものの先頭の要素のTypeClassを取得。
-				if typcls2 == INTERFACE or typcls2 == SERVICE: branch[1] = "│   "  # サービスかインターフェイスのとき。横枝だったのを縦枝に書き換える。
-		if typcls == INTERFACE_METHOD:  # jがメソッドのとき。
+				if typcls2==INTERFACE or typcls2==SERVICE: branch[1] = "│   "  # サービスかインターフェイスのとき。横枝だったのを縦枝に書き換える。
+		if typcls==INTERFACE_METHOD:  # jがメソッドのとき。
 			typ = _format_type(j.ReturnType.Name.replace(css, ""))  # 戻り値の型を取得。
 			stack2 = list(j.Parameters)[::-1]  # メソッドの引数について逆順(降順ではない)にスタック2に取得。
 			if not stack2:  # 引数がないとき。
@@ -151,25 +154,25 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 				else:  # 例外がないとき。
 					fns["INTERFACE_METHOD"]("{})".format("".join(branch)))  # 閉じ括弧をつけて最後の引数を出力。
 		else:  # jがメソッド以外のとき。
-			if typcls == INTERFACE:  # インターフェイスのとき。XInterfaceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト。
+			if typcls==INTERFACE:  # インターフェイスのとき。XInterfaceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト。
 				branch.append(j.Name.replace(css, ""))  # インターフェイス名をbranchの2番要素に追加。
 				t_itd = j.getBaseTypes() + j.getOptionalBaseTypes()  # 親インターフェイスを取得。
 				t_md = j.getMembers()  # インターフェイス属性とメソッドのTypeDescriptionオブジェクトを取得。
 				fns["INTERFACE"]("".join(branch))  # 枝をつけて出力。
-			elif typcls == PROPERTY:  # サービス属性のとき。
+			elif typcls==PROPERTY:  # サービス属性のとき。
 				typ = _format_type(j.getPropertyTypeDescription().Name.replace(css, ""))  # 属性の型を取得。
 				branch.append("{}  {}".format(typ.rjust(m), j.Name.replace(css, "")))  # 型は最大文字数で右寄せにする。
 				fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
-			elif typcls == INTERFACE_ATTRIBUTE:  # インターフェイス属性のとき。
+			elif typcls==INTERFACE_ATTRIBUTE:  # インターフェイス属性のとき。
 				typ = _format_type(j.Type.Name.replace(css, ""))  # 戻り値の型を取得。
 				branch.append("{}  {}".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 型は最大文字数で右寄せにする。
 				fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけて出力。
-			elif typcls == SERVICE:  # jがサービスのときtdはXServiceTypeDescriptionインターフェイスをもつ。
+			elif typcls==SERVICE:  # jがサービスのときtdはXServiceTypeDescriptionインターフェイスをもつ。
 				branch.append(j.Name.replace(css, ""))  # サービス名をbranchの2番要素に追加。
 				t_std = j.getMandatoryServices() + j.getOptionalServices()  # 親サービスを取得。
 				lst_std = [i for i in t_std if not i.Name in st_ss]  # st_ssを除く。
 				stack.extend(sorted(lst_std, key=lambda x: x.Name, reverse=True))  # 親サービス名で降順に並べてサービスのTypeDescriptionオブジェクトをスタックに追加。
-				lst_level.extend(level + 1 for i in lst_std)  # 階層を取得。
+				lst_level.extend(level+1 for i in lst_std)  # 階層を取得。
 				st_ss.update(i.Name for i in lst_std)  # すでにでてきたサービス名をst_ssに追加して次は使わないようにする。
 				itd = j.getInterface()  # new-styleサービスのインターフェイスを取得。TypeDescriptionオブジェクト。
 				if itd:  # new-styleサービスのインターフェイスがあるとき。
@@ -181,22 +184,44 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 		if t_itd:  # 親インターフェイスがあるとき。(TypeDescriptionオブジェクト)
 			lst_itd = [i for i in t_itd if not i.Name in st_omi]  # st_omiを除く。
 			stack.extend(sorted(lst_itd, key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。
-			lst_level.extend(level + 1 for i in lst_itd)  # 階層を取得。
+			lst_level.extend(level+1 for i in lst_itd)  # 階層を取得。
 			st_omi.update(i.Name for i in lst_itd)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
 			t_itd = tuple()  # インターフェイスのTypeDescriptionオブジェクトの入れ物を初期化。
 		if t_md:  # インターフェイス属性とメソッドがあるとき。
 			stack.extend(sorted(t_md, key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。
-			lst_level.extend([level + 1 for i in t_md])  # 階層を取得。
+			lst_level.extend([level+1 for i in t_md])  # 階層を取得。
 			m = max([len(i.ReturnType.Name.replace(css, "")) for i in t_md if i.getTypeClass()==INTERFACE_METHOD] + [len(i.Type.Name.replace(css, "")) for i in t_md if i.getTypeClass()==INTERFACE_ATTRIBUTE])  # インターフェイス属性とメソッドの型のうち最大文字数を取得。
 			t_md = tuple()  # メソッドのTypeDescriptionオブジェクトの入れ物を初期化。
 		if t_spd:  # サービス属性があるとき。
 			stack.extend(sorted(list(t_spd), key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。
-			lst_level.extend(level + 1 for i in t_spd)  # 階層を取得。
+			lst_level.extend(level+1 for i in t_spd)  # 階層を取得。
 			m = max(len(i.getPropertyTypeDescription().Name.replace(css, "")) for i in t_spd)  # サービス属性の型のうち最大文字数を取得。
 			t_spd = tuple()  # サービス属性のTypeDescriptionオブジェクトの入れ物を初期化。
 		if not stack:  # スタックが尽きた時
-			st_rem = st_si.difference(st_omi)  # まだでてきていないインターフェイスがサービスを介さないインターフェイス。
-			if st_rem:  # まだ出力していないインターフェイスが残っているとき
-				stack =  [tdm.getByHierarchicalName(i) for i in sorted(st_rem, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。CSSが必要。
-				lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
-				st_omi.update(st_rem)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
+			if isinstance(st_si, set):  # st_siが集合のとき
+				st_rem = st_si.difference(st_omi)  # まだでてきていないインターフェイスがサービスを介さないインターフェイス。
+				if st_rem:  # まだ出力していないインターフェイスが残っているとき
+					stack =  [tdm.getByHierarchicalName(i) for i in sorted(st_rem, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。CSSが必要。
+					lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
+					st_omi.update(st_rem)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
+	if st_nontyps:  # TypeDescriptionオブジェクトを取得できないサービスを最後に出力する。
+		if len(st_nontyps)==1:  # サービスがひとつの時
+			branch = ["└─"] 
+			branch.append(st_nontyps.pop().replace(css, ""))  # サービス名をbranchの要素に追加。
+			fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。			
+		else:  # サービスが複数のとき(があるだろうか)?
+			lst_nontyps = sorted(st_nontyps)  # 昇順に並べる
+			for i in lst_nontyps[:-1]:  # 一番最後の要素以外について
+				branch = ["├─"] 
+				branch.append(i.replace(css, ""))  # サービス名をbranchの要素に追加。
+				fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。	
+			branch = ["└─"] 
+			branch.append(lst_nontyps[-1].replace(css, ""))  # 一番最後のサービス名をbranchの要素に追加。
+			fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。				
+		properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティーを取得。
+		props = sorted(properties, key=lambda x: x.Name)  #Name属性で昇順に並べる。
+		m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
+		for i in props:  # 各プロパティについて。
+			branch = [indent*2]  # 枝をリセット。
+			branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
+			fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
