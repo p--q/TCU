@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: optiondialog.py\n"
-"POT-Creation-Date: 2017-09-23 18:41+0900\n"
-"PO-Revision-Date: 2017-09-23 18:43+0900\n"
+"POT-Creation-Date: 2017-10-01 23:12+0900\n"
+"PO-Revision-Date: 2017-10-01 23:12+0900\n"
 "Last-Translator: p--q <pq.blogspot@gmail.com>\n"
 "Language-Team: p--q <pq.blogspot@gmail.com>\n"
 "Language: Japanese\n"
@@ -16,16 +16,16 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: ../../..\n"
 
-#: ../../../trees.py:22
-msgid "{} is not an IDL name."
-msgstr "{}はIDL名ではありません。"
+#: ../../../trees.py:26
+msgid "Can not get TypeDescription object of {}."
+msgstr "{}のTypeDescriptionが取得できません。"
 
-#: ../../../trees.py:29
+#: ../../../trees.py:36
 msgid ""
 "{} is not a service name or an interface name, so it is not supported yet."
 msgstr "{}はサービス名またはインターフェイス名ではないので未対応です。"
 
-#: ../../../trees.py:55
+#: ../../../trees.py:65
 msgid "There is no service or interface to support."
 msgstr "サポートするサービスやインターフェイスがありません。"
 
@@ -64,3 +64,6 @@ msgstr "デフォルトに戻す(~R)"
 #: ../../../optiondialog.py:84
 msgid "Select ref folder"
 msgstr "refフォルダを選択する"
+
+#~ msgid "{} is not an IDL name."
+#~ msgstr "{}はIDL名ではありません。"

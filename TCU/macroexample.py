@@ -7,12 +7,14 @@ def macro():  # オートメーションでFilePickerサービスをインスタ
 	doc = XSCRIPTCONTEXT.getDocument()
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
 # 	tcu.wtree(doc)
-	# for Calc。
-	sheets = doc.getSheets()
-	sheet = sheets[0]	
-	cell = sheet["A1"]
-	tcu.wtree(cell)  # サービスが重複している例。
-	
+	# for Calc only。
+# 	sheets = doc.getSheets()
+# 	sheet = sheets[0]	
+# 	cell = sheet["A1"]
+# 	tcu.wtree(cell)  # サービスが重複している例。
+	# for Calc only。
+	conv = doc.createInstance("com.sun.star.table.CellAddressConversion")
+	tcu.wtree(conv)  #TypeDescriptionオブジェクトを取得できないサービス。
 	
 
 
