@@ -122,6 +122,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2017-10-2 version 0.9.5 Support for services that can not get TypeDescription object.
 
+2017-10-3 version 0.9.6 Refactoring.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
