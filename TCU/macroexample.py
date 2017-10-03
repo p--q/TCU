@@ -7,19 +7,22 @@ def macro():  # オートメーションでFilePickerサービスをインスタ
 	doc = XSCRIPTCONTEXT.getDocument()
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
 # 	tcu.wtree(doc)
+	
 	# for Calc only。
-# 	sheets = doc.getSheets()
-# 	sheet = sheets[0]	
-# 	cell = sheet["A1"]
-# 	tcu.wtree(cell)  # サービスが重複している例。
+	sheets = doc.getSheets()
+	sheet = sheets[0]	
+	cell = sheet["A1"]
+	
+	
+	tcu.wtree(cell)  # サービスが重複している例。
+	
 # 	tcu.wtree(cell.getText())  # サービスが重複している例。
 	
 	
 	# for Calc only。
-	conv = doc.createInstance("com.sun.star.table.CellAddressConversion")
-	tcu.wtree(conv)  #TypeDescriptionオブジェクトを取得できないサービス。
+# 	conv = doc.createInstance("com.sun.star.table.CellAddressConversion")
+# 	tcu.wtree(conv)  #TypeDescriptionオブジェクトを取得できないサービス。
 	
-
 
 g_exportedScripts = macro, #マクロセレクターに限定表示させる関数をタプルで指定。
 if __name__ == "__main__":  # オートメーションで実行するとき

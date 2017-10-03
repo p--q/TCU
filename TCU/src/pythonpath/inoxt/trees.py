@@ -7,7 +7,7 @@ from .common import localization
 from .common import enableRemoteDebugging  # デバッグ用デコレーター
 # @enableRemoteDebugging
 def createTree(args, obj):
-	ctx, configurationprovider, css, fns, st_omi, outputs = args  # st_omi: スタックに追加しないインターフェイス名の集合。
+	ctx, configurationprovider, css, fns, st_omi, outputs, s = args  # st_omi: スタックに追加しないインターフェイス名の集合。
 	st_ss = set()  # スタックに追加しいないサービス名の集合。
 	stack = []  # スタックを初期化。
 	st_si = False  #  サポートインターフェイス名の集合。
@@ -64,8 +64,30 @@ def createTree(args, obj):
 	if stack:  # 起点となるサービスかインターフェイスがあるとき。
 		args = css, fns, st_omi, stack, st_si, tdm, st_ss, st_nontyps, obj
 		generateOutputs(args)
+		removeBranch(s, outputs)  # 不要な枝を削除。置換する空白を渡す。
 	else:
 		outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
+def removeBranch(s, outputs):  # 不要な枝を削除。引数は半角スペース。" "か"&nbsp;"
+	def _replaceBar(j, line, ss):  #  不要な縦棒を空白に置換。
+		line = line.replace("│",ss,1)
+		outputs[j] = line	
+	i = None;  # 縦棒の位置を初期化。	
+	n = len(outputs)  # 出力行数を取得。
+	for j in reversed(range(n)):  # 出力行を下からみていく。
+		line = outputs[j]  # 行の内容を取得。
+		if j == n - 1 :  # 最終行のとき
+			if "│" in line:  # 本来あってはならない縦棒があるとき。
+				i = line.find("│")  # 縦棒の位置を取得。
+				_replaceBar(j, line, s*2) #  不要な縦棒を空白に置換。
+			else:
+				break  # 最終行に縦棒がなければループを出る。
+		else:
+			if "│" in line[i]:  # 消去するべき縦棒があるとき
+				_replaceBar(j, line, s*2) #  不要な縦棒を空白に置換。
+			else:  # 縦棒が途切れたとき
+				line = line.replace("├─","└─",1)  # 下向きの分岐を消す。
+				outputs[j] = line
+				break
 # @enableRemoteDebugging
 def generateOutputs(args):  # 末裔から祖先を得て木を出力する。flagはオブジェクトが直接インターフェイスをもっているときにTrueになるフラグ。
 	reg_sqb = re.compile(r'\[\]')  # 型から角括弧ペアを取得する正規表現オブジェクト。
