@@ -54,17 +54,15 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		ctx, configurationprovider, css, fns_keys, dummy_offline, dummy_prefix, idlsset = getConfigs(self.consts)
 		outputs = []
 		fns = {key: outputs.append for key in fns_keys}
-		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		args = ctx, configurationprovider, css, fns, idlsset, outputs, " "
 		createTree(args, obj)
-		removeBranch(" ", outputs)  # 不要な枝を削除。置換する空白を渡す。
 		return outputs
 	def wtree(self, obj):
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
-		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		args = ctx, configurationprovider, css, fns, idlsset, outputs, "&nbsp;"
 		createTree(args, obj)
-		removeBranch("&nbsp;", outputs)  # 不要な枝を削除。置換する空白を渡す。
 		outputs.append("</tt>")		
 		html = "<br>".join(outputs)
 		title = "TCU - Tree Command for UNO"
@@ -77,27 +75,6 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		else:
 			server = Wsgi(title, html)
 			server.wsgiServer()
-def removeBranch(s, outputs):  # 不要な枝を削除。引数は半角スペース。" "か"&nbsp;"
-	def _replaceBar(j, line, ss):  #  不要な縦棒を空白に置換。
-		line = line.replace("│",ss,1)
-		outputs[j] = line	
-	i = None;  # 縦棒の位置を初期化。	
-	n = len(outputs)  # 出力行数を取得。
-	for j in reversed(range(n)):  # 出力行を下からみていく。
-		line = outputs[j]  # 行の内容を取得。
-		if j == n - 1 :  # 最終行のとき
-			if "│" in line:  # 本来あってはならない縦棒があるとき。
-				i = line.find("│")  # 縦棒の位置を取得。
-				_replaceBar(j, line, s*2) #  不要な縦棒を空白に置換。
-			else:
-				break  # 最終行に縦棒がなければループを出る。
-		else:
-			if "│" in line[i]:  # 消去するべき縦棒があるとき
-				_replaceBar(j, line, s*2) #  不要な縦棒を空白に置換。
-			else:  # 縦棒が途切れたとき
-				line = line.replace("├─","└─",1)  # 下向きの分岐を消す。
-				outputs[j] = line
-				break
 def getConfigs(consts):
 	ctx, smgr, configurationprovider, css, properties, nodepath, simplefileaccess = consts
 	fns_keys = "SERVICE", "INTERFACE", "PROPERTY", "INTERFACE_METHOD", "INTERFACE_ATTRIBUTE", "NOLINK"  # fnsのキーのタプル。

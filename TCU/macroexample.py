@@ -7,16 +7,22 @@ def macro():  # オートメーションでFilePickerサービスをインスタ
 	doc = XSCRIPTCONTEXT.getDocument()
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
 # 	tcu.wtree(doc)
-	# for Calc only。
-# 	sheets = doc.getSheets()
-# 	sheet = sheets[0]	
-# 	cell = sheet["A1"]
-# 	tcu.wtree(cell)  # サービスが重複している例。
-	# for Calc only。
-	conv = doc.createInstance("com.sun.star.table.CellAddressConversion")
-	tcu.wtree(conv)  #TypeDescriptionオブジェクトを取得できないサービス。
 	
-
+	# for Calc only。
+	sheets = doc.getSheets()
+	sheet = sheets[0]	
+	cell = sheet["A1"]
+	
+	
+	tcu.wtree(cell)  # サービスが重複している例。
+	
+# 	tcu.wtree(cell.getText())  # サービスが重複している例。
+	
+	
+	# for Calc only。
+# 	conv = doc.createInstance("com.sun.star.table.CellAddressConversion")
+# 	tcu.wtree(conv)  #TypeDescriptionオブジェクトを取得できないサービス。
+	
 
 g_exportedScripts = macro, #マクロセレクターに限定表示させる関数をタプルで指定。
 if __name__ == "__main__":  # オートメーションで実行するとき
@@ -57,8 +63,8 @@ if __name__ == "__main__":  # オートメーションで実行するとき
 		return ScriptContext(ctx)  
 	XSCRIPTCONTEXT = main()  # XSCRIPTCONTEXTを取得。
 	doc = XSCRIPTCONTEXT.getDocument()  # 現在開いているドキュメントを取得。
-# 	doctype = "scalc", "com.sun.star.sheet.SpreadsheetDocument"  # Calcドキュメントを開くとき。
-	doctype = "swriter", "com.sun.star.text.TextDocument"  # Writerドキュメントを開くとき。
+	doctype = "scalc", "com.sun.star.sheet.SpreadsheetDocument"  # Calcドキュメントを開くとき。
+# 	doctype = "swriter", "com.sun.star.text.TextDocument"  # Writerドキュメントを開くとき。
 	if (doc is None) or (not doc.supportsService(doctype[1])):  # ドキュメントが取得できなかった時またはCalcドキュメントではない時
 		XSCRIPTCONTEXT.getDesktop().loadComponentFromURL("private:factory/{}".format(doctype[0]), "_blank", 0, ())  # ドキュメントを開く。ここでdocに代入してもドキュメントが開く前にmacro()が呼ばれてしまう。
 	flg = True
