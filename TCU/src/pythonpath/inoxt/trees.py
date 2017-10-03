@@ -93,80 +93,17 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 				branch[0] = "│   "  # 階層1に立枝をつける。
 				p = 2  # 階層2から処理する。
 			for i in range(p, level):  # 階層iから出た枝が次行の階層i-1の枝になる。
-				branch[0] += "│   " if i in lst_level else indent  # iは枝の階層ではなく、枝のより上の行にあるその枝がでた階層になる。
+				branch[0] += "│   " if i in lst_level else indent  # 階層iから出た枝が次行の階層i-1の枝になる。iは枝の階層ではなく、枝のより上の行にあるその枝がでた階層になる。
 		if typcls==INTERFACE or typcls==SERVICE:  # jがサービスかインターフェイスのとき。
 			if level==1 and st_si:  # 階層1かつサービスを介さないインターフェイスがあるとき
 				branch[1] = "├─"  # 階層1のときは下につづく分岐をつける。
 			else:
 				branch[1] = "├─" if level in lst_level else "└─"  # スタックに同じ階層があるときは"├─" 。
-		else:  # jがインターフェイスかサービス以外のとき。
-			branch[1] = indent  # 横枝は出さない。
-			if level in lst_level:  # スタックに同じ階層があるとき。
-				typcls2 = stack[lst_level.index(level)].getTypeClass()  # スタックにある同じ階層のものの先頭の要素のTypeClassを取得。
-				if typcls2==INTERFACE or typcls2==SERVICE: branch[1] = "│   "  # サービスかインターフェイスのとき。横枝だったのを縦枝に書き換える。
-		if typcls==INTERFACE_METHOD:  # jがメソッドのとき。
-			typ = _format_type(j.ReturnType.Name.replace(css, ""))  # 戻り値の型を取得。
-			stack2 = list(j.Parameters)[::-1]  # メソッドの引数について逆順(降順ではない)にスタック2に取得。
-			if not stack2:  # 引数がないとき。
-				branch.append("{}  {}()".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 「戻り値の型(固定幅mで右寄せ) メソッド名()」をbranchの3番の要素に取得。
-				fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけてメソッドを出力。
-			else:  # 引数があるとき。
-				m3 = max(len(i.Type.Name.replace(css, "")) for i in stack2)  # 引数の型の最大文字数を取得。
-				k = stack2.pop()  # 先頭の引数を取得。
-				inout = inout_dic[(k.isIn(), k.isOut())]  # 引数の[in]の判定、[out]の判定
-				typ2 = _format_type(k.Type.Name.replace(css, ""))  # 戻り値の型を取得。
-				branch.append("{}  {}( {} {} {}".format(typ.rjust(m), j.MemberName.replace(css, ""), inout, typ2.rjust(m3), k.Name.replace(css, "")))  # 「戻り値の型(固定幅で右寄せ)  メソッド名(inout判定　引数の型(固定幅m3で左寄せ) 引数名」をbranchの3番の要素に取得。
-				m2 = len("{}  {}( ".format(typ.rjust(m), j.MemberName.replace(css, "")))  # メソッドの引数の部分をインデントする文字数を取得。
-				if stack2:  # 引数が複数あるとき。
-					branch.append(",")  # branchの4番の要素に「,」を取得。
-					fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけてメソッド名とその0番の引数を出力。
-					del branch[2:]  # branchの2番以上の要素は破棄する。
-					while stack2:  # 1番以降の引数があるとき。
-						k = stack2.pop()
-						inout = inout_dic[(k.isIn(), k.isOut())]  # 引数の[in]の判定、[out]の判定
-						typ2 = _format_type(k.Type.Name.replace(css, ""))  # 戻り値の型を取得。
-						branch.append("{}{} {} {}".format(" ".rjust(m2), inout, typ2.rjust(m3), k.Name.replace(css, "")))  # 「戻り値の型とメソッド名の固定幅m2 引数の型(固定幅m3で左寄せ) 引数名」をbranchの2番の要素に取得。
-						if stack2:  # 最後の引数でないとき。
-							branch.append(",")  # branchの3番の要素に「,」を取得。
-							fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけて引数を出力。
-							del branch[2:]  # branchの2番以上の要素は破棄する。
-				t_ex = j.Exceptions  # 例外を取得。
-				if t_ex:  # 例外があるとき。
-					fns["INTERFACE_METHOD"]("".join(branch))  # 最後の引数を出力。
-					del branch[2:]  # branchの2番以降の要素を削除。
-					n = ") raises ( "  # 例外があるときに表示する文字列。
-					m4 = len(n)  # nの文字数。
-					stack2 = list(t_ex)  # 例外のタプルをリストに変換。
-					branch.append(" ".rjust(m2-m4))  # 戻り値の型とメソッド名の固定幅m2からnの文字数を引いて2番の要素に取得。
-					branch.append(n)  # nを3番要素に取得。他の要素と別にしておかないとn in branchがTrueにならない。
-					while stack2:  # stack2があるとき
-						k = stack2.pop()  # 例外を取得。
-						branch.append(k.Name.replace(css, ""))  # branchの3番(初回以外のループでは4番)の要素に例外名を取得。
-						if stack2:  # まだ次の例外があるとき。
-							fns["INTERFACE_METHOD"]("{},".format("".join(branch)))  # 「,」をつけて出力。
-						else:  # 最後の要素のとき。
-							fns["INTERFACE_METHOD"]("{})".format("".join(branch)))  # 閉じ括弧をつけて出力。
-						if n in branch:  # nが枝にあるときはnのある3番以上のbranchの要素を削除。
-							del branch[3:]
-							branch.append(" ".rjust(m4))  # nを削った分の固定幅をbranchの3番の要素に追加。
-						else:
-							del branch[4:]  # branchの4番以上の要素を削除。
-				else:  # 例外がないとき。
-					fns["INTERFACE_METHOD"]("{})".format("".join(branch)))  # 閉じ括弧をつけて最後の引数を出力。
-		else:  # jがメソッド以外のとき。
 			if typcls==INTERFACE:  # インターフェイスのとき。XInterfaceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト。
 				branch.append(j.Name.replace(css, ""))  # インターフェイス名をbranchの2番要素に追加。
 				t_itd = j.getBaseTypes() + j.getOptionalBaseTypes()  # 親インターフェイスを取得。
 				t_md = j.getMembers()  # インターフェイス属性とメソッドのTypeDescriptionオブジェクトを取得。
 				fns["INTERFACE"]("".join(branch))  # 枝をつけて出力。
-			elif typcls==PROPERTY:  # サービス属性のとき。
-				typ = _format_type(j.getPropertyTypeDescription().Name.replace(css, ""))  # 属性の型を取得。
-				branch.append("{}  {}".format(typ.rjust(m), j.Name.replace(css, "")))  # 型は最大文字数で右寄せにする。
-				fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
-			elif typcls==INTERFACE_ATTRIBUTE:  # インターフェイス属性のとき。
-				typ = _format_type(j.Type.Name.replace(css, ""))  # 戻り値の型を取得。
-				branch.append("{}  {}".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 型は最大文字数で右寄せにする。
-				fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけて出力。
 			elif typcls==SERVICE:  # jがサービスのときtdはXServiceTypeDescriptionインターフェイスをもつ。
 				branch.append(j.Name.replace(css, ""))  # サービス名をbranchの2番要素に追加。
 				t_std = j.getMandatoryServices() + j.getOptionalServices()  # 親サービスを取得。
@@ -181,6 +118,69 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 					t_itd = j.getMandatoryInterfaces() + j.getOptionalInterfaces()  # XInterfaceTypeDescriptionインターフェイスをもつTypeDescriptionオブジェクト。
 				t_spd = j.Properties  # サービスからXPropertyTypeDescriptionインターフェイスをもつオブジェクトのタプルを取得。
 				fns["SERVICE"]("".join(branch))  # 枝をつけて出力。
+		else:  # jがインターフェイスかサービス以外のとき。
+			branch[1] = indent  # 横枝は出さない。
+			if level in lst_level:  # スタックに同じ階層があるとき。
+				typcls2 = stack[lst_level.index(level)].getTypeClass()  # スタックにある同じ階層のものの先頭の要素のTypeClassを取得。
+				if typcls2==INTERFACE or typcls2==SERVICE: branch[1] = "│   "  # サービスかインターフェイスのとき。横枝だったのを縦枝に書き換える。
+			if typcls==INTERFACE_METHOD:  # jがメソッドのとき。
+				typ = _format_type(j.ReturnType.Name.replace(css, ""))  # 戻り値の型を取得。
+				stack2 = list(j.Parameters)[::-1]  # メソッドの引数について逆順(降順ではない)にスタック2に取得。
+				if not stack2:  # 引数がないとき。
+					branch.append("{}  {}()".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 「戻り値の型(固定幅mで右寄せ) メソッド名()」をbranchの3番の要素に取得。
+					fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけてメソッドを出力。
+				else:  # 引数があるとき。
+					m3 = max(len(i.Type.Name.replace(css, "")) for i in stack2)  # 引数の型の最大文字数を取得。
+					k = stack2.pop()  # 先頭の引数を取得。
+					inout = inout_dic[(k.isIn(), k.isOut())]  # 引数の[in]の判定、[out]の判定
+					typ2 = _format_type(k.Type.Name.replace(css, ""))  # 戻り値の型を取得。
+					branch.append("{}  {}( {} {} {}".format(typ.rjust(m), j.MemberName.replace(css, ""), inout, typ2.rjust(m3), k.Name.replace(css, "")))  # 「戻り値の型(固定幅で右寄せ)  メソッド名(inout判定　引数の型(固定幅m3で左寄せ) 引数名」をbranchの3番の要素に取得。
+					m2 = len("{}  {}( ".format(typ.rjust(m), j.MemberName.replace(css, "")))  # メソッドの引数の部分をインデントする文字数を取得。
+					if stack2:  # 引数が複数あるとき。
+						branch.append(",")  # branchの4番の要素に「,」を取得。
+						fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけてメソッド名とその0番の引数を出力。
+						del branch[2:]  # branchの2番以上の要素は破棄する。
+						while stack2:  # 1番以降の引数があるとき。
+							k = stack2.pop()
+							inout = inout_dic[(k.isIn(), k.isOut())]  # 引数の[in]の判定、[out]の判定
+							typ2 = _format_type(k.Type.Name.replace(css, ""))  # 戻り値の型を取得。
+							branch.append("{}{} {} {}".format(" ".rjust(m2), inout, typ2.rjust(m3), k.Name.replace(css, "")))  # 「戻り値の型とメソッド名の固定幅m2 引数の型(固定幅m3で左寄せ) 引数名」をbranchの2番の要素に取得。
+							if stack2:  # 最後の引数でないとき。
+								branch.append(",")  # branchの3番の要素に「,」を取得。
+								fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけて引数を出力。
+								del branch[2:]  # branchの2番以上の要素は破棄する。
+					t_ex = j.Exceptions  # 例外を取得。
+					if t_ex:  # 例外があるとき。
+						fns["INTERFACE_METHOD"]("".join(branch))  # 最後の引数を出力。
+						del branch[2:]  # branchの2番以降の要素を削除。
+						n = ") raises ( "  # 例外があるときに表示する文字列。
+						m4 = len(n)  # nの文字数。
+						stack2 = list(t_ex)  # 例外のタプルをリストに変換。
+						branch.append(" ".rjust(m2-m4))  # 戻り値の型とメソッド名の固定幅m2からnの文字数を引いて2番の要素に取得。
+						branch.append(n)  # nを3番要素に取得。他の要素と別にしておかないとn in branchがTrueにならない。
+						while stack2:  # stack2があるとき
+							k = stack2.pop()  # 例外を取得。
+							branch.append(k.Name.replace(css, ""))  # branchの3番(初回以外のループでは4番)の要素に例外名を取得。
+							if stack2:  # まだ次の例外があるとき。
+								fns["INTERFACE_METHOD"]("{},".format("".join(branch)))  # 「,」をつけて出力。
+							else:  # 最後の要素のとき。
+								fns["INTERFACE_METHOD"]("{})".format("".join(branch)))  # 閉じ括弧をつけて出力。
+							if n in branch:  # nが枝にあるときはnのある3番以上のbranchの要素を削除。
+								del branch[3:]
+								branch.append(" ".rjust(m4))  # nを削った分の固定幅をbranchの3番の要素に追加。
+							else:
+								del branch[4:]  # branchの4番以上の要素を削除。
+					else:  # 例外がないとき。
+						fns["INTERFACE_METHOD"]("{})".format("".join(branch)))  # 閉じ括弧をつけて最後の引数を出力。
+			else:  # jがメソッド以外のとき。
+				if typcls==PROPERTY:  # サービス属性のとき。
+					typ = _format_type(j.getPropertyTypeDescription().Name.replace(css, ""))  # 属性の型を取得。
+					branch.append("{}  {}".format(typ.rjust(m), j.Name.replace(css, "")))  # 型は最大文字数で右寄せにする。
+					fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
+				elif typcls==INTERFACE_ATTRIBUTE:  # インターフェイス属性のとき。
+					typ = _format_type(j.Type.Name.replace(css, ""))  # 戻り値の型を取得。
+					branch.append("{}  {}".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 型は最大文字数で右寄せにする。
+					fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけて出力。
 		if t_itd:  # 親インターフェイスがあるとき。(TypeDescriptionオブジェクト)
 			lst_itd = [i for i in t_itd if not i.Name in st_omi]  # st_omiを除く。
 			stack.extend(sorted(lst_itd, key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。

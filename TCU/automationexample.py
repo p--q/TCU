@@ -23,7 +23,7 @@ if ctx:
 try:	   
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
 
-# 	tcu.wtree(ctx)
+	tcu.wtree(ctx)
 # 	print("\n".join(tcu.tree("com.sun.star.frame.Desktop")))
 
 
