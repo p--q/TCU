@@ -23,10 +23,8 @@ if ctx:
 try:	   
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
 
-# 	tcu.wtree(ctx)
+	tcu.wtree(ctx)
 # 	print("\n".join(tcu.tree("com.sun.star.frame.Desktop")))
-
-
 # 	print("\n".join(tcu.tree("com.sun.star.table.CellAddressConversion")))  # Can not get TypeDescription object of com.sun.star.table.CellAddressConversion.
 
 except:
