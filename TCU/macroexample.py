@@ -6,7 +6,7 @@ def macro():  # オートメーションでFilePickerサービスをインスタ
 	smgr = ctx.getServiceManager()  # サービスマネージャーの取得。
 	doc = XSCRIPTCONTEXT.getDocument()
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
-	tcu.wtree(doc)
+# 	tcu.wtree(doc)
 	# for Calc only。
 # 	sheets = doc.getSheets()
 # 	sheet = sheets[0]	
@@ -16,8 +16,8 @@ def macro():  # オートメーションでFilePickerサービスをインスタ
 	
 	
 	# for Calc only。
-# 	conv = doc.createInstance("com.sun.star.table.CellAddressConversion")
-# 	tcu.wtree(conv)  #TypeDescriptionオブジェクトを取得できないサービス。
+	conv = doc.createInstance("com.sun.star.table.CellAddressConversion")
+	tcu.wtree(conv)  #TypeDescriptionオブジェクトを取得できないサービス。
 	
 
 
