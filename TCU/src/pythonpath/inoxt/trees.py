@@ -77,7 +77,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 	t_itd = tuple()  # インターフェイスのTypeDescriptionオブジェクトの入れ物を初期化。
 	t_md = tuple()  # メソッドのTypeDescriptionオブジェクトの入れ物を初期化。
 	t_spd = tuple()  # サービス属性のTypeDescriptionオブジェクトの入れ物を初期化。
-	def _consumeStack(stack):	
+	def _consumeStack(stack):  # fnsの関数による出力順を変更してはいけない。	
 		def _format_type(typ):  # 属性がシークエンスのとき[]の表記を修正。
 			n = len(reg_sqb.findall(typ))  # 角括弧のペアのリストの数を取得。
 			for dummy in range(n):  # 角括弧の数だけ繰り返し。
