@@ -6,12 +6,12 @@ def macro():  # オートメーションでFilePickerサービスをインスタ
 	smgr = ctx.getServiceManager()  # サービスマネージャーの取得。
 	doc = XSCRIPTCONTEXT.getDocument()
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
-# 	tcu.wtree(doc)
+	tcu.wtree(doc)
 	# for Calc only。
-	sheets = doc.getSheets()
-	sheet = sheets[0]	
-	cell = sheet["A1"]
-	tcu.wtree(cell)  # サービスが重複している例。
+# 	sheets = doc.getSheets()
+# 	sheet = sheets[0]	
+# 	cell = sheet["A1"]
+# 	tcu.wtree(cell)  # サービスが重複している例。
 # 	tcu.wtree(cell.getText())  # サービスが重複している例。
 	
 	
