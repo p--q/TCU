@@ -27,6 +27,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	
 	# wtree() method outputs trees to the default browser.
 	# When outputting to the web browser, anchors are attached to the IDL reference.
+	# wtree() method can be executed only once.
 	tcu.wtree(arg)  # arg is an UNO object or a string of IDL full name.
 	
 	# tree() method returns a tuple of lines.
