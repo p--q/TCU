@@ -113,7 +113,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 ## Known Issues
 
-- Anchors output by wtree() method other than services, interfaces, exceptions, Structs are invalid. ex. enum, Typedef.
+- Anchors output by wtree() method other than services, interfaces, exceptions, Structs are invalid. ex. enum, typedef.
 
 - wtree() method can be executed only once per process.
 
