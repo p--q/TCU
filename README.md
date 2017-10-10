@@ -111,6 +111,12 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
   - It is useful when you want to switch the version of LibreOffice of API to use.
 
+## Known Issues
+
+- Anchors output by wtree() method other than services, interfaces, exceptions, Structs are invalid. ex. enum, Typedef.
+
+- wtree() method can be executed only once per process.
+
 ## Release notes
 
 2017-9-23 version 0.9.0 First release.
