@@ -142,7 +142,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2017-10-3 version 0.9.6 Refactoring.
 
-2017-10-13 version 1.0.0 Added wcompare() method.
+2017-10-13 version 1.0.1 Added wcompare() method.
 
 ## Tools
 
