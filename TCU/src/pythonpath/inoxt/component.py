@@ -73,21 +73,25 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		fns = createFns(prefix, fns_keys, outputs)
 		ss_obj1 = set(obj1.getSupportedServiceNames()) if hasattr(obj1, "getSupportedServiceNames") else set()  # obj1のサービス名の集合。
 		ss_obj2 = set(obj2.getSupportedServiceNames()) if hasattr(obj2, "getSupportedServiceNames") else set()  # obj2のサービス名の集合。
-		si_obj1 = set(i.typeName for i in obj1.getTypes()) if hasattr(obj1, "getTypes") else set()  # obj1のインターフェイス名の集合。
-		si_obj2 = set(i.typeName for i in obj2.getTypes()) if hasattr(obj2, "getTypes") else set()  # obj2のインターフェイス名の集合。
+		si_obj1 = set(i.typeName for i in obj1.getTypes()) if hasattr(obj1, "getTypes") else set()  # obj1のインターフェイス名の集合。継承されているインターフェイス名が取得できていない。
+		si_obj2 = set(i.typeName for i in obj2.getTypes()) if hasattr(obj2, "getTypes") else set()  # obj2のインターフェイス名の集合。継承されているインターフェイス名が取得できていない。
 		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
-		st_oms = ss_obj1^ss_obj2  # 共通に含まれるサービス以外のサービスの出力は抑制する。
-		st_omi = si_obj1^si_obj2 | idlsset  # 共通に含まれるインターフェイス以外の出力は抑制する。
+		st_ncoms = ss_obj1^ss_obj2  # 共通に含まれる以外のサービス。
+		st_ncomi = si_obj1^si_obj2  # 共通に含まれる以外のインターフェイス。
+		st_oms = st_ncoms.copy()  # 共通に含まれるサービス以外のサービスの出力は抑制する。
+		st_omi = st_ncomi.copy() | idlsset  # 共通に含まれるインターフェイス以外とデフォルト出力抑制インターフェイスの出力は抑制する。
 		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
 		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
+		st_coms = st_oms - st_ncoms  # 共通に含まれるとしてすでに出力したサービス。
+		st_comi = (st_omi - st_ncomi) | idlsset  # 共通に含まれるとしてすでに出力したインターフェイスとデフォルト出力抑制インターフェイス。
 		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
-		st_oms = ss_obj2  # obj2に含まれるサービスは抑制する。
-		st_omi = si_obj2 | idlsset  # obj2に含まれるインターフェイスは抑制する。
+		st_oms = ss_obj2 | st_coms # obj2に含まれるサービスと共通に含まれるサービスは抑制する。
+		st_omi = si_obj2 | st_comi # obj2に含まれるインターフェイスと共通に含まれるインターフェイスは抑制する。
 		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
 		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
 		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
-		st_oms = ss_obj1  # obj1に含まれるサービスは抑制する。
-		st_omi = si_obj1 | idlsset  # obj1に含まれるインターフェイスは抑制する。
+		st_oms = ss_obj1 | st_coms  # obj1に含まれるサービスと共通に含まれるサービスは抑制する。
+		st_omi = si_obj1 | st_comi  # obj1に含まれるインターフェイスと共通に含まれるインターフェイスは抑制する。
 		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
 		createTree(args, obj2)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
