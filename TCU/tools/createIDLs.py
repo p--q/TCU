@@ -14,7 +14,8 @@ def defineIDLs():  # IDLの定義を設定する。継承しているUNOIDLのid
 	interface = UNOIDL("pq.XTcu")  # 定義するUNOIDLのフルパスでインスタンス化。XInterfaceは自動include。
 	interface.setSubs(  # 属性、メソッド、多重継承のインターフェイスなど
 		"sequence <string> tree([in] any Object)",		
-		"void wtree([in] any Object)"
+		"void wtree([in] any Object)",
+		"void wcompare([in] any Object1, [in] any Object2)"
 		)
 	yield interface
 

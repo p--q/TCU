@@ -50,31 +50,58 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 	def getSupportedMethodNames(self):
 		return "tree", "wtree"
 	# XUnoTreeCommand
-	def tree(self, obj):
+	def tree(self, obj):  # 一行ずつの文字列のシークエンスを返す。
 		ctx, configurationprovider, css, fns_keys, dummy_offline, dummy_prefix, idlsset = getConfigs(self.consts)
 		outputs = []
 		fns = {key: outputs.append for key in fns_keys}
-		args = ctx, configurationprovider, css, fns, idlsset, outputs, " "
+		args = ctx, configurationprovider, css, fns, idlsset, outputs, " ", set()
 		createTree(args, obj)
 		return outputs
-	def wtree(self, obj):
+	def wtree(self, obj):  # ブラウザに出力。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
-		args = ctx, configurationprovider, css, fns, idlsset, outputs, "&nbsp;"
+		args = ctx, configurationprovider, css, fns, idlsset, outputs, "&nbsp;", set()
 		createTree(args, obj)
-		outputs.append("</tt>")		
-		html = "<br>".join(outputs)
-		title = "TCU - Tree Command for UNO"
-		if offline:  # ローカルリファレンスを使うときはブラウザのセキュリティの制限のためにhtmlファイルを開くようにしないとローカルファイルが開けない。
-			pathsettingssingleton = ctx.getByName('/singletons/com.sun.star.util.thePathSettings')
-			fileurl = pathsettingssingleton.getPropertyValue("Temp")
-			systempath = unohelper.fileUrlToSystemPath(fileurl)
-			filepath = os.path.join(systempath, "tcu_output.html")
-			createHTMLfile(filepath, title, html)
-		else:
-			server = Wsgi(title, html)
-			server.wsgiServer()
+		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
+# 	@enableRemoteDebugging
+	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
+		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
+		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		fns = createFns(prefix, fns_keys, outputs)
+		ss_obj1 = set(obj1.getSupportedServiceNames()) if hasattr(obj1, "getSupportedServiceNames") else set()  # obj1のサービス名の集合。
+		ss_obj2 = set(obj2.getSupportedServiceNames()) if hasattr(obj2, "getSupportedServiceNames") else set()  # obj2のサービス名の集合。
+		si_obj1 = set(i.typeName for i in obj1.getTypes()) if hasattr(obj1, "getTypes") else set()  # obj1のインターフェイス名の集合。
+		si_obj2 = set(i.typeName for i in obj2.getTypes()) if hasattr(obj2, "getTypes") else set()  # obj2のインターフェイス名の集合。
+		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
+		st_oms = ss_obj1^ss_obj2  # 共通に含まれるサービス以外のサービスの出力は抑制する。
+		st_omi = si_obj1^si_obj2 | idlsset  # 共通に含まれるインターフェイス以外の出力は抑制する。
+		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
+		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
+		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
+		st_oms = ss_obj2  # obj2に含まれるサービスは抑制する。
+		st_omi = si_obj2 | idlsset  # obj2に含まれるインターフェイスは抑制する。
+		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
+		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
+		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
+		st_oms = ss_obj1  # obj1に含まれるサービスは抑制する。
+		st_omi = si_obj1 | idlsset  # obj1に含まれるインターフェイスは抑制する。
+		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
+		createTree(args, obj2)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
+		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
+def createHtml(ctx, offline, outputs):  # ウェブブラウザに出力。
+	outputs.append("</tt>")		
+	html = "<br>".join(outputs)
+	title = "TCU - Tree Command for UNO"
+	if offline:  # ローカルリファレンスを使うときはブラウザのセキュリティの制限のためにhtmlファイルを開くようにしないとローカルファイルが開けない。
+		pathsettingssingleton = ctx.getByName('/singletons/com.sun.star.util.thePathSettings')
+		fileurl = pathsettingssingleton.getPropertyValue("Temp")
+		systempath = unohelper.fileUrlToSystemPath(fileurl)
+		filepath = os.path.join(systempath, "tcu_output.html")
+		createHTMLfile(filepath, title, html)
+	else:
+		server = Wsgi(title, html)
+		server.wsgiServer()		
 def getConfigs(consts):
 	ctx, smgr, configurationprovider, css, properties, nodepath, simplefileaccess = consts
 	fns_keys = "SERVICE", "INTERFACE", "PROPERTY", "INTERFACE_METHOD", "INTERFACE_ATTRIBUTE", "NOLINK"  # fnsのキーのタプル。
