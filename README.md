@@ -79,6 +79,17 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	└─.uno.XWeak
 			  .uno.XAdapter  queryAdapter()
 
+	# wcompare() method compares the services and interfaces of the two objects and outputs the results to the web browser.
+	ctx = XSCRIPTCONTEXT.getComponentContext()  # Get the component context
+	smgr = ctx.getServiceManager()  # Get the service manager
+	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # Instantiate TCU
+	doc = XSCRIPTCONTEXT.getDocument()  # Get a Calc document
+	sheets = doc.getSheets()  # Get a sheet collection
+	sheet = sheets[0]  # Retrieve the first sheet
+	cells = sheet[2:5, 3:6]  # Row index 2 or more and less than 5, column index 3 or more and less than 6 (that is, D 3: same as F 5) cell range. 
+	cellcursor = sheet.createCursor()  # Get the cell cursor
+	tcu.wcompare(cells, cellcursor)  # Compare objects
+
 ## Script Examples
 
 - For automation
@@ -130,6 +141,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 2017-10-2 version 0.9.5 Support for services that can not get TypeDescription object.
 
 2017-10-3 version 0.9.6 Refactoring.
+
+2017-10-13 version 1.0.0 Added wcompare() method.
 
 ## Tools
 
