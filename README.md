@@ -27,6 +27,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	
 	# wtree() method outputs trees to the default browser.
 	# When outputting to the web browser, anchors are attached to the IDL reference.
+	# wtree() method can be executed only once.
 	tcu.wtree(arg)  # arg is an UNO object or a string of IDL full name.
 	
 	# tree() method returns a tuple of lines.
@@ -110,6 +111,12 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
   - It is useful when you want to switch the version of LibreOffice of API to use.
 
+## Known Issues
+
+- Anchors output by wtree() method other than services, interfaces, exceptions, Structs are invalid. ex. enum, typedef.
+
+- wtree() method can be executed only once per process.
+
 ## Release notes
 
 2017-9-23 version 0.9.0 First release.
@@ -121,6 +128,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 2017-10-1 version 0.9.4 Suppress duplicate service output.
 
 2017-10-2 version 0.9.5 Support for services that can not get TypeDescription object.
+
+2017-10-3 version 0.9.6 Refactoring.
 
 ## Tools
 
