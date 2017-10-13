@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: optiondialog.py\n"
-"POT-Creation-Date: 2017-10-13 17:09+0900\n"
-"PO-Revision-Date: 2017-10-13 17:09+0900\n"
+"POT-Creation-Date: 2017-10-13 18:13+0900\n"
+"PO-Revision-Date: 2017-10-13 18:18+0900\n"
 "Last-Translator: p--q <pq.blogspot@gmail.com>\n"
 "Language-Team: p--q <pq.blogspot@gmail.com>\n"
 "Language: Japanese\n"
@@ -65,16 +65,15 @@ msgstr "デフォルトに戻す(~R)"
 msgid "Select ref folder"
 msgstr "refフォルダを選択する"
 
-#: ../../../component.py:76
-#, fuzzy
+#: ../../../component.py:78
 msgid "Services and interface common to object1 and object2."
-msgstr "object1とobject2に共通するサービスとイターフェイス一覧"
+msgstr "object1とobject2に共通するサービスとインターフェイス一覧"
 
-#: ../../../component.py:81
+#: ../../../component.py:83
 msgid "Services and interfaces that only object1 has."
 msgstr "object1だけがもつサービスとインターフェイス一覧"
 
-#: ../../../component.py:86
+#: ../../../component.py:88
 msgid "Services and interfaces that only object2 has."
 msgstr "object2だけがもつサービスとインターフェイス一覧"
 

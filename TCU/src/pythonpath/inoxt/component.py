@@ -9,6 +9,7 @@ from pq import XTcu  # 拡張機能で定義したインターフェイスをイ
 from .optiondialog import dilaogHandler
 from .trees import createTree
 from .wsgi import Wsgi, createHTMLfile
+from .common import localization
 from .common import enableRemoteDebugging  # デバッグ用デコレーター
 IMPLE_NAME = None
 SERVICE_NAME = None
@@ -67,6 +68,7 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 # 	@enableRemoteDebugging
 	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
+		_ = localization(configurationprovider)  # 地域化関数に置換。
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
 		ss_obj1 = set(obj1.getSupportedServiceNames()) if hasattr(obj1, "getSupportedServiceNames") else set()  # obj1のサービス名の集合。
