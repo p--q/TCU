@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: optiondialog.py\n"
-"POT-Creation-Date: 2017-10-01 23:12+0900\n"
-"PO-Revision-Date: 2017-10-01 23:12+0900\n"
+"POT-Creation-Date: 2017-10-13 17:09+0900\n"
+"PO-Revision-Date: 2017-10-13 17:09+0900\n"
 "Last-Translator: p--q <pq.blogspot@gmail.com>\n"
 "Language-Team: p--q <pq.blogspot@gmail.com>\n"
 "Language: Japanese\n"
@@ -16,16 +16,16 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: ../../..\n"
 
-#: ../../../trees.py:26
+#: ../../../trees.py:29
 msgid "Can not get TypeDescription object of {}."
 msgstr "{}のTypeDescriptionが取得できません。"
 
-#: ../../../trees.py:36
+#: ../../../trees.py:39
 msgid ""
 "{} is not a service name or an interface name, so it is not supported yet."
 msgstr "{}はサービス名またはインターフェイス名ではないので未対応です。"
 
-#: ../../../trees.py:65
+#: ../../../trees.py:73
 msgid "There is no service or interface to support."
 msgstr "サポートするサービスやインターフェイスがありません。"
 
@@ -64,6 +64,19 @@ msgstr "デフォルトに戻す(~R)"
 #: ../../../optiondialog.py:84
 msgid "Select ref folder"
 msgstr "refフォルダを選択する"
+
+#: ../../../component.py:76
+#, fuzzy
+msgid "Services and interface common to object1 and object2."
+msgstr "object1とobject2に共通するサービスとイターフェイス一覧"
+
+#: ../../../component.py:81
+msgid "Services and interfaces that only object1 has."
+msgstr "object1だけがもつサービスとインターフェイス一覧"
+
+#: ../../../component.py:86
+msgid "Services and interfaces that only object2 has."
+msgstr "object2だけがもつサービスとインターフェイス一覧"
 
 #~ msgid "{} is not an IDL name."
 #~ msgstr "{}はIDL名ではありません。"

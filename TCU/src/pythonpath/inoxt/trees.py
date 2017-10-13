@@ -7,8 +7,8 @@ from .common import localization
 from .common import enableRemoteDebugging  # デバッグ用デコレーター
 # @enableRemoteDebugging
 def createTree(args, obj):
-	ctx, configurationprovider, css, fns, st_omi, outputs, s = args  # st_omi: スタックに追加しないインターフェイス名の集合。
-	st_ss = set()  # スタックに追加しいないサービス名の集合。
+	ctx, configurationprovider, css, fns, st_omi, outputs, s, st_oms = args  # st_omi: スタックに追加しないインターフェイス名の集合。ss_omi: : スタックに追加しないサービス名の集合。
+# 	st_ss = set()  # スタックに追加しいないサービス名の集合。
 	stack = []  # スタックを初期化。
 	st_si = False  #  サポートインターフェイス名の集合。
 	st_nontyps = set()  # TypeDescriptionオブジェクトを取得できないサービス。
@@ -34,7 +34,7 @@ def createTree(args, obj):
 		if typcls == INTERFACE:  # インターフェイスの時
 			st_omi.add(idl)  # スタックに追加しないインターフェイス名に追加する。
 		elif typcls == SERVICE:  # サービスの時
-			st_ss.add(idl)  # スタックに追加しないサービス名に追加する。			
+			st_oms.add(idl)  # スタックに追加しないサービス名に追加する。			
 		else:  # サービスかインターフェイス以外のときは未対応。
 			outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.".format(idl)))  # はサービス名またはインターフェイス名ではないので未対応です。
 			return
@@ -52,17 +52,21 @@ def createTree(args, obj):
 					stack.extend(lst_std)  # スタックに新たなサービスのTypeDescriptionオブジェクトのみ追加。
 					st_sups.update(i.Name for i in lst_std)  # 既に取得した親サービス名の集合型に新たに取得したサービス名を追加。
 			st_ss.difference_update(st_sups)  # オブジェクトのサポートサービスのうち親サービスにないものだけにする=これがサービスの末裔。
+			st_ss.difference_update(st_oms)  # 出力を抑制するサービス名を除く。
 			if st_ss:  # サービス名があるとき
 				lst_ss = sorted(st_ss, reverse=True)  # サービス名の集合を降順のリストにする。
 				stack = [tdm.getByHierarchicalName(i) for i in lst_ss]  # TypeDescriptionオブジェクトに変換してスタックに取得。
+				st_oms.update(st_ss)  # スタックに追加しないサービス名に追加する。	
 		if hasattr(obj, "getTypes"):  # サービスを介さないインターフェイスがある場合。elifにしてはいけない。
-			st_si = set(i.typeName for i in obj.getTypes()).difference(st_omi)  # サポートインターフェイス名を集合型で取得して、除外するインターフェイス名を除く。
-			if not stack:  # サポートするサービスがないとき
-				if st_si:  # サポートするインターフェイスがあるとき
-					stack = [tdm.getByHierarchicalName(i) for i in sorted(st_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
-					st_omi.update(st_si)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
+			types = obj.getTypes()  # インターフェイス名ではなくtype型が返ってくる。
+			if types:  # type型が取得できたとき。
+				st_si = set(i.typeName for i in types).difference(st_omi)  # サポートインターフェイス名を集合型で取得して、除外するインターフェイス名を除く。
+				if not stack:  # サポートするサービスがないとき
+					if st_si:  # サポートするインターフェイスがあるとき
+						stack = [tdm.getByHierarchicalName(i) for i in sorted(st_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
+						st_omi.update(st_si)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
 	if stack:  # 起点となるサービスかインターフェイスがあるとき。
-		args = css, fns, st_omi, stack, st_si, tdm, st_ss, st_nontyps, obj
+		args = css, fns, st_omi, st_oms, stack, st_si, tdm, st_nontyps, obj
 		generateOutputs(args)
 		removeBranch(s, outputs)  # 不要な枝を削除。置換する空白を渡す。
 	else:
@@ -91,7 +95,7 @@ def removeBranch(s, outputs):  # 不要な枝を削除。引数は半角スペ�
 # @enableRemoteDebugging
 def generateOutputs(args):  # 末裔から祖先を得て木を出力する。flagはオブジェクトが直接インターフェイスをもっているときにTrueになるフラグ。
 	reg_sqb = re.compile(r'\[\]')  # 型から角括弧ペアを取得する正規表現オブジェクト。
-	css, fns, st_omi, stack, st_si, tdm, st_ss, st_nontyps, obj = args
+	css, fns, st_omi, st_oms, stack, st_si, tdm, st_nontyps, obj = args
 	lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 	indent = "	  "  # インデントを設定。
 	m = 0  # 最大文字数を初期化。
@@ -144,10 +148,10 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 					branch.append(j.Name.replace(css, ""))  # サービス名をbranchの2番要素に追加。
 					fns["SERVICE"]("".join(branch))  # 枝をつけて出力。
 					t_std = j.getMandatoryServices() + j.getOptionalServices()  # 親サービスを取得。
-					lst_std = [i for i in t_std if not i.Name in st_ss]  # st_ssを除く。
+					lst_std = [i for i in t_std if not i.Name in st_oms]  # st_ssを除く。
 					stack.extend(sorted(lst_std, key=lambda x: x.Name, reverse=True))  # 親サービス名で降順に並べてサービスのTypeDescriptionオブジェクトをスタックに追加。
 					lst_level.extend(level+1 for i in lst_std)  # 階層を取得。
-					st_ss.update(i.Name for i in lst_std)  # すでにでてきたサービス名をst_ssに追加して次は使わないようにする。
+					st_oms.update(i.Name for i in lst_std)  # すでにでてきたサービス名をst_ssに追加して次は使わないようにする。
 					itd = j.getInterface()  # new-styleサービスのインターフェイスを取得。TypeDescriptionオブジェクト。
 					if itd:  # new-styleサービスのインターフェイスがあるとき。
 						t_itd = itd,  # XInterfaceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト。

@@ -12,9 +12,10 @@ def macro():  # オートメーションでFilePickerサービスをインスタ
 	sheets = doc.getSheets()
 	sheet = sheets[0]	
 	cell = sheet["A1"]
-	
-	
-	tcu.wtree(cell)  # サービスが重複している例。
+# 	tcu.wtree(cell)  # サービスが重複している例。
+	cells = sheet["A1:C3"]
+# 	tcu.wtree(cells) 
+	tcu.wcompare(cell, cells)
 	
 # 	tcu.wtree(cell.getText())  # サービスが重複している例。
 	
