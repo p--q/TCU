@@ -5,7 +5,7 @@ from com.sun.star.container import NoSuchElementException
 from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
 from .common import localization
 from .common import enableRemoteDebugging  # デバッグ用デコレーター
-@enableRemoteDebugging
+# @enableRemoteDebugging
 def createTree(args, obj):
 	ctx, configurationprovider, css, fns, st_omi, outputs, s, st_oms = args  # st_omi: スタックに追加しないインターフェイス名の集合。ss_omi: : スタックに追加しないサービス名の集合。
 # 	st_ss = set()  # スタックに追加しいないサービス名の集合。
