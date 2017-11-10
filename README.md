@@ -144,6 +144,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2017-10-13 version 1.0.1 Added wcompare() method.
 
+2017-11-10 version 1.0.2 Fixed a bug.　Output the tree without error when the service that can not acquire a TypeDescription object has no getPropertySetInfo() method.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
