@@ -4,6 +4,10 @@
 	xmlns:d="http://openoffice.org/extensions/description/2006"
 	xmlns:l="http://libreoffice.org/extensions/description/2011"
 	xmlns:xlink="http://www.w3.org/1999/xlink">
+	<platform value="all" />
+	<icon>
+		<default xlink:href="icons/extension.png" />
+	</icon>
 	<dependencies>
 		<l:LibreOffice-minimal-version
 			d:name="LibreOffice 5.2"
@@ -32,13 +36,9 @@
 				xlink:href="LICENSE" />
 		</simple-license>
 	</registration>
-	<version value="1.0.1" />
-	<platform value="all" />
-	<identifier value="pq.Tcu" />
 	<display-name>
 		<name lang="en">TCU - Tree Command for UNO</name>
 	</display-name>
-	<icon>
-		<default xlink:href="icons/extension.png" />
-	</icon>
+	<version value="1.0.2" />
+	<identifier value="pq.Tcu" />
 </description>
