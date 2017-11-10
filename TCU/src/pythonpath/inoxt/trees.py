@@ -5,7 +5,7 @@ from com.sun.star.container import NoSuchElementException
 from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
 from .common import localization
 from .common import enableRemoteDebugging  # デバッグ用デコレーター
-# @enableRemoteDebugging
+@enableRemoteDebugging
 def createTree(args, obj):
 	ctx, configurationprovider, css, fns, st_omi, outputs, s, st_oms = args  # st_omi: スタックに追加しないインターフェイス名の集合。ss_omi: : スタックに追加しないサービス名の集合。
 # 	st_ss = set()  # スタックに追加しいないサービス名の集合。
@@ -248,11 +248,12 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 				fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。	
 			branch = ["└─"] 
 			branch.append(lst_nontyps[-1].replace(css, ""))  # 一番最後のサービス名をbranchの要素に追加。
-			fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。				
-		properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティーを取得。
-		props = sorted(properties, key=lambda x: x.Name)  #Name属性で昇順に並べる。
-		m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
-		for i in props:  # 各プロパティについて。
-			branch = [indent*2]  # 枝をリセット。
-			branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
-			fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
+			fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。		
+		if hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき
+			properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティーを取得。
+			props = sorted(properties, key=lambda x: x.Name)  #Name属性で昇順に並べる。
+			m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
+			for i in props:  # 各プロパティについて。
+				branch = [indent*2]  # 枝をリセット。
+				branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
+				fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
