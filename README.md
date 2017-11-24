@@ -80,6 +80,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 			  .uno.XAdapter  queryAdapter()
 
 	# wcompare() method compares the services and interfaces of the two objects and outputs the results to the web browser.
+	# It compares interfaces acquired by getTypes() method.
 	ctx = XSCRIPTCONTEXT.getComponentContext()  # Get the component context
 	smgr = ctx.getServiceManager()  # Get the service manager
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # Instantiate TCU
