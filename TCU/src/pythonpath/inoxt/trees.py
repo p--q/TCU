@@ -235,6 +235,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 			lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 			st_omi.update(st_rem)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
 			_consumeStack(stack)		
+	st_nontyps.difference_update(st_oms)  # TypeDescriptionオブジェクトを取得できないサービスから出力を抑制するサービスを除く。
 	if st_nontyps:  # TypeDescriptionオブジェクトを取得できないサービスを最後に出力する。
 		if len(st_nontyps)==1:  # サービスがひとつの時
 			branch = ["└─"] 
