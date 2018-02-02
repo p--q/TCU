@@ -151,6 +151,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-2-2 version 1.0.5 Fixed a serious bug. Output property not via service.
 
+2018-2-3 version 1.0.6 Added function to correct incorrect IDL(com.sun.star.AccessibleSpreadsheetDocumentView). 
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
