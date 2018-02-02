@@ -149,6 +149,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-1-26 version 1.0.3 Fixed a bug. Resolved an issue that wcompare() does not suppress output of services not in IDL.
 
+2018-2-2 version 1.0.5 Fixed a serious bug. Output property not via service.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
