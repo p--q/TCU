@@ -4,11 +4,10 @@ import re
 from com.sun.star.container import NoSuchElementException
 from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
 from .common import localization
-from .common import enableRemoteDebugging  # デバッグ用デコレーター
+# from .common import enableRemoteDebugging  # デバッグ用デコレーター
 # @enableRemoteDebugging
 def createTree(args, obj):
 	ctx, configurationprovider, css, fns, st_omi, outputs, s, st_oms = args  # st_omi: スタックに追加しないインターフェイス名の集合。ss_omi: : スタックに追加しないサービス名の集合。
-# 	st_ss = set()  # スタックに追加しいないサービス名の集合。
 	stack = []  # スタックを初期化。
 	st_si = False  #  サポートインターフェイス名の集合。
 	st_nontyps = set()  # TypeDescriptionオブジェクトを取得できないサービス。
@@ -103,6 +102,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 	t_itd = tuple()  # インターフェイスのTypeDescriptionオブジェクトの入れ物を初期化。
 	t_md = tuple()  # メソッドのTypeDescriptionオブジェクトの入れ物を初期化。
 	t_spd = tuple()  # サービス属性のTypeDescriptionオブジェクトの入れ物を初期化。
+	st_omp = set()  # すでに出力したプロパティ名を入れる集合。
 	def _consumeStack(stack):  # fnsの関数による出力順を変更してはいけない。	
 		def _format_type(typ):  # 属性がシークエンスのとき[]の表記を修正。
 			n = len(reg_sqb.findall(typ))  # 角括弧のペアのリストの数を取得。
@@ -219,42 +219,60 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 									del branch[4:]  # branchの4番以上の要素を削除。
 						else:  # 例外がないとき。
 							fns["INTERFACE_METHOD"]("{})".format("".join(branch)))  # 閉じ括弧をつけて最後の引数を出力。
-				elif typcls==PROPERTY:  # サービス属性のとき。
+				elif typcls==PROPERTY:  # サービス属性(つまりプロパティ)のとき。
 					typ = _format_type(j.getPropertyTypeDescription().Name.replace(css, ""))  # 属性の型を取得。
-					branch.append("{}  {}".format(typ.rjust(m), j.Name.replace(css, "")))  # 型は最大文字数で右寄せにする。
+					name = j.Name  # プロパティ名を取得。
+					st_omp.add(name)  # すでに出力したプロパティ名の集合に追加。
+					branch.append("{}  {}".format(typ.rjust(m), name))  # 型は最大文字数で右寄せにする。
+# 					branch.append("{}  {}".format(typ.rjust(m), j.Name.replace(css, "")))  # 型は最大文字数で右寄せにする。
 					fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
-				elif typcls==INTERFACE_ATTRIBUTE:  # インターフェイス属性のとき。
+				elif typcls==INTERFACE_ATTRIBUTE:  # インターフェイス属性(つまりアトリビュート)のとき。
 					typ = _format_type(j.Type.Name.replace(css, ""))  # 戻り値の型を取得。
 					branch.append("{}  {}".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 型は最大文字数で右寄せにする。
 					fns["INTERFACE_METHOD"]("".join(branch))  # 枝をつけて出力。						
 	_consumeStack(stack)
+	# サービスを介さないインターフェイスの出力。
 	if isinstance(st_si, set):  # st_siが集合のとき、それはオブジェクトから得たインターフェイス名。
 		st_rem = st_si.difference(st_omi)  # まだでてきていないインターフェイスがサービスを介さないインターフェイス。
 		if st_rem:  # まだ出力していないインターフェイスが残っているとき
 			stack =  [tdm.getByHierarchicalName(i) for i in sorted(st_rem, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。CSSが必要。
 			lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 			st_omi.update(st_rem)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
-			_consumeStack(stack)		
+			_consumeStack(stack)	
+	# サービスを介さないプロパティの出力。IDLにでてこないプロパティ?IDLにないサービス名の出力時の枝の決定のために存在だけまず確認する。
+	newprops = []  # まだ出力していないプロパティのリスト。
+	if hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。サービスに属さないプロパティを出力。
+		properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティを取得。すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
+		newprops = [p for p in properties if not p.Name in st_omp]  # すでに出力しているプロパティ名の集合にNameがあるのを除いたProperty Structのリストにする。	
+		branchfirst = "├─" if newprops else "└─"  # まだ出力していないプロパティがあるときは枝を変える。
+	# IDLにないサービスの出力。
 	st_nontyps.difference_update(st_oms)  # TypeDescriptionオブジェクトを取得できないサービスから出力を抑制するサービスを除く。
-	if st_nontyps:  # TypeDescriptionオブジェクトを取得できないサービスを最後に出力する。
+	if st_nontyps:  # TypeDescriptionオブジェクトを取得できないサービスを最後に出力する。コントロール関係は実装サービス名がここにでてくる。
 		if len(st_nontyps)==1:  # サービスがひとつの時
-			branch = ["└─"] 
+			branch = [branchfirst] 
 			branch.append(st_nontyps.pop().replace(css, ""))  # サービス名をbranchの要素に追加。
 			fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。			
-		else:  # サービスが複数のとき(があるだろうか)?
+		else:  # サービスが複数のとき(UnoControlDialogModelなど)
 			lst_nontyps = sorted(st_nontyps)  # 昇順に並べる
 			for i in lst_nontyps[:-1]:  # 一番最後の要素以外について
 				branch = ["├─"] 
 				branch.append(i.replace(css, ""))  # サービス名をbranchの要素に追加。
 				fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。	
-			branch = ["└─"] 
+			branch = [branchfirst] 
 			branch.append(lst_nontyps[-1].replace(css, ""))  # 一番最後のサービス名をbranchの要素に追加。
 			fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。		
-		if hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき
-			properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティーを取得。
-			props = sorted(properties, key=lambda x: x.Name)  #Name属性で昇順に並べる。
-			m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
-			for i in props:  # 各プロパティについて。
+# 	if hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。サービスに属さないプロパティを出力。
+# 		properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティを取得。すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
+# 		newprops = [p for p in properties if not p.Name in st_omp]  # すでに出力しているプロパティ名の集合にNameがあるのを除いたProperty Structのリストにする。
+	if newprops:  # まだ出力していないプロパティが存在する時。
+		props = sorted(newprops, key=lambda x: x.Name)  #Name属性で昇順に並べる。
+		m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
+		first = True  # 1行目のフラグ。
+		for i in props:  # 各プロパティについて。
+			if first:  # 最初のプロパティには枝を入れる。
+				branch = ["└─ "]  # 他の枝と異なって最後に半角スペースを入れる。
+				first = False
+			else:
 				branch = [indent*2]  # 枝をリセット。
-				branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
-				fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
+			branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
+			fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
