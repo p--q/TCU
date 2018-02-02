@@ -243,7 +243,7 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 	if hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。サービスに属さないプロパティを出力。
 		properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティを取得。すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
 		newprops = [p for p in properties if not p.Name in st_omp]  # すでに出力しているプロパティ名の集合にNameがあるのを除いたProperty Structのリストにする。	
-		branchfirst = "├─" if newprops else "└─"  # まだ出力していないプロパティがあるときは枝を変える。
+	branchfirst = "├─" if newprops else "└─"  # まだ出力していないプロパティがあるときは枝を変える。
 	# IDLにないサービスの出力。
 	st_nontyps.difference_update(st_oms)  # TypeDescriptionオブジェクトを取得できないサービスから出力を抑制するサービスを除く。
 	if st_nontyps:  # TypeDescriptionオブジェクトを取得できないサービスを最後に出力する。コントロール関係は実装サービス名がここにでてくる。
