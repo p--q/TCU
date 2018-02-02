@@ -224,7 +224,6 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 					name = j.Name  # プロパティ名を取得。
 					st_omp.add(name)  # すでに出力したプロパティ名の集合に追加。
 					branch.append("{}  {}".format(typ.rjust(m), name))  # 型は最大文字数で右寄せにする。
-# 					branch.append("{}  {}".format(typ.rjust(m), j.Name.replace(css, "")))  # 型は最大文字数で右寄せにする。
 					fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
 				elif typcls==INTERFACE_ATTRIBUTE:  # インターフェイス属性(つまりアトリビュート)のとき。
 					typ = _format_type(j.Type.Name.replace(css, ""))  # 戻り値の型を取得。
@@ -261,9 +260,6 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 			branch = [branchfirst] 
 			branch.append(lst_nontyps[-1].replace(css, ""))  # 一番最後のサービス名をbranchの要素に追加。
 			fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。		
-# 	if hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。サービスに属さないプロパティを出力。
-# 		properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティを取得。すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
-# 		newprops = [p for p in properties if not p.Name in st_omp]  # すでに出力しているプロパティ名の集合にNameがあるのを除いたProperty Structのリストにする。
 	if newprops:  # まだ出力していないプロパティが存在する時。
 		props = sorted(newprops, key=lambda x: x.Name)  #Name属性で昇順に並べる。
 		m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
