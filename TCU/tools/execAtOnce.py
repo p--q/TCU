@@ -23,11 +23,11 @@ if __name__ == '__main__':
 # 	print("\ncreateOptionsDialogXcu\n")
 # 	createOptionsDialogXcu(c)
 
-# 	print("\ncreateXcs\n")
-# 	createXcs(c)
+	print("\ncreateXcs\n")
+	createXcs(c)
 
-# 	print("\ncreateXMLs\n")
-# 	createXMLs(c)  # components, rdb, xcu, xcsファイルを作成した時に実行が必要。
+	print("\ncreateXMLs\n")
+	createXMLs(c)  # components, rdb, xcu, xcsファイルを作成した時に実行が必要。
 	
 	print("\ncreateOXT\n")
 	createOXT(c)
