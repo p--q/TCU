@@ -10,7 +10,7 @@ from .optiondialog import dilaogHandler
 from .trees import createTree
 from .wsgi import Wsgi, createHTMLfile
 from .common import localization
-from .common import enableRemoteDebugging  # デバッグ用デコレーター
+# from .common import enableRemoteDebugging  # デバッグ用デコレーター
 IMPLE_NAME = None
 SERVICE_NAME = None
 def create(ctx, *args, imple_name, service_name):
