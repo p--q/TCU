@@ -162,8 +162,8 @@ def createFns(prefix, fns_keys, outputs):
 		_make_link("interface", reg_i, item_with_branch)	
 	def _fn_nolink(item_with_branch):
 		outputs.append(item_with_branch.replace(" ", "&nbsp;"))
-	fns = {key: _fn for key in fns_keys[2:5]}
-	fns[fns_keys[0]] = _fn_s		
-	fns[fns_keys[1]] = _fn_i
-	fns[fns_keys[5]] = _fn_nolink
+	fns = {key: _fn for key in fns_keys[2:5]}  # キー PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
+	fns[fns_keys[0]] = _fn_s  # SERVICE		
+	fns[fns_keys[1]] = _fn_i  # INTERFACE
+	fns[fns_keys[5]] = _fn_nolink  # NOLINK
 	return fns

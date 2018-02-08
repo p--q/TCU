@@ -270,12 +270,8 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 	if newprops:  # まだ出力していないプロパティが存在する時。
 		props = sorted(newprops, key=lambda x: x.Name)  #Name属性で昇順に並べる。
 		m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
-		first = True  # 1行目のフラグ。
+		fns["NOLINK"]("└──")  # リンクをつけずに出力。	
 		for i in props:  # 各プロパティについて。
-			if first:  # 最初のプロパティには枝を入れる。
-				branch = ["└─ "]  # 他の枝と異なって最後に半角スペースを入れる。
-				first = False
-			else:
-				branch = [indent*2]  # 枝をリセット。
+			branch = [indent*2]  # 枝をリセット。
 			branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
 			fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。
