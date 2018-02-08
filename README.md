@@ -153,7 +153,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-2-3 version 1.0.6 Added function to correct incorrect IDL(com.sun.star.AccessibleSpreadsheetDocumentView). 
 
-2018-2-8 version 1.0.7 2018-2-3 Changed branch of property not via service.
+2018-2-8 version 1.0.7 Changed branch of property not via service.
 
 ## Tools
 
