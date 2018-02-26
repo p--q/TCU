@@ -129,6 +129,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 - wtree() method can be executed only once per process.
 
+- In the wcompare() method, branches are cut off or there is an interface name which is not displayed.
+
 ## Release notes
 
 2017-9-23 version 0.9.0 First release.
