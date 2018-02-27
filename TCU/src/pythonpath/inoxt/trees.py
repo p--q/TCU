@@ -47,7 +47,6 @@ def createTree(args, obj):
 				supportedservicenames.remove(incorrectidl)  # 間違ったIDL名を除く。
 				supportedservicenames.add("com.sun.star.sheet.AccessibleSpreadsheetDocumentView")  # 正しいIDL名を追加する。
 			st_ss = set(i for i in supportedservicenames if _idl_check(i))  # サポートサービス名一覧からTypeDescriptionオブジェクトを取得できないサービス名を除いた集合を得る。	
-# 			st_ss = set(i for i in obj.getSupportedServiceNames() if _idl_check(i))  # サポートサービス名一覧からTypeDescriptionオブジェクトを取得できないサービス名を除いた集合を得る。
 			st_sups = set()  # 親サービスを入れる集合。
 			if len(st_ss) > 1:  # サポートしているサービス名が複数ある場合。
 				stack = [tdm.getByHierarchicalName(i) for i in st_ss]  # サポートサービスのTypeDescriptionオブジェクトをスタックに取得。

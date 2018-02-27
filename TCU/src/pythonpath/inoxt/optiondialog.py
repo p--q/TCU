@@ -69,7 +69,6 @@ class ActionListener(unohelper.Base, XActionListener):
 	def __init__(self, dialog, consts):
 		self.dialog = dialog
 		self.consts = consts
-# 	@enableRemoteDebugging
 	def actionPerformed(self, actionevent):	
 		cmd = actionevent.ActionCommand
 		ctx, smgr, configurationprovider, css, properties, nodepath, simplefileaccess = self.consts
@@ -106,7 +105,6 @@ class MouseListener(unohelper.Base, XMouseListener):
 		pass			
 	def mouseReleased(self, mouseevent):
 		pass
-# 	@enableRemoteDebugging
 	def mouseEntered(self, mouseevent):
 		control, dummy_controlmodel, name = eventSource(mouseevent)
 		if name == "FixedHyperlink1":

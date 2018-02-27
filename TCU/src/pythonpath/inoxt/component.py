@@ -70,6 +70,12 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		_ = localization(configurationprovider)  # 地域化関数に置換。
+		
+		ss_obj1, nontdm_obj1, is_obj1, ps_obj1 = getAttrbs(ctx, css, obj1)
+		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(ctx, css, obj2)
+		
+		
+		
 		outputs1 = []  # 結果を受け取るリスト。
 		args = ctx, css, outputs1
 		getAttrbs(args, obj1)
