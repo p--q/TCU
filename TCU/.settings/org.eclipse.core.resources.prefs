@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//helpers/unoinsp.py=utf-8
 encoding//src/pythonpath/inoxt/common.py=utf-8
 encoding//src/pythonpath/inoxt/component.py=utf-8
+encoding//src/pythonpath/inoxt/notree.py=utf-8
 encoding//src/pythonpath/inoxt/optiondialog.py=utf-8
 encoding//src/pythonpath/inoxt/trees.py=utf-8
 encoding//src/pythonpath/inoxt/wsgi.py=utf-8

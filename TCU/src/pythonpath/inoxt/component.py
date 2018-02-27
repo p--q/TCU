@@ -10,6 +10,7 @@ from .optiondialog import dilaogHandler
 from .trees import createTree
 from .wsgi import Wsgi, createHTMLfile
 from .common import localization
+from .notree import getAttrbs
 # from .common import enableRemoteDebugging  # デバッグ用デコレーター
 IMPLE_NAME = None
 SERVICE_NAME = None
@@ -55,44 +56,53 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		ctx, configurationprovider, css, fns_keys, dummy_offline, dummy_prefix, idlsset = getConfigs(self.consts)
 		outputs = []
 		fns = {key: outputs.append for key in fns_keys}
-		args = ctx, configurationprovider, css, fns, idlsset, outputs, " ", set()
+		args = ctx, configurationprovider, css, fns, idlsset, outputs, " ", set(), set()
 		createTree(args, obj)
 		return outputs
 	def wtree(self, obj):  # ブラウザに出力。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
-		args = ctx, configurationprovider, css, fns, idlsset, outputs, "&nbsp;", set()
+		args = ctx, configurationprovider, css, fns, idlsset, outputs, "&nbsp;", set(), set()
 		createTree(args, obj)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 # 	@enableRemoteDebugging
 	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		_ = localization(configurationprovider)  # 地域化関数に置換。
+		outputs1 = []  # 結果を受け取るリスト。
+		args = ctx, css, outputs1
+		getAttrbs(args, obj1)
+		ss_obj1, si_obj1, sp_obj1 = outputs1
+		outputs2 = []  # 結果を受け取るリスト。
+		args = ctx, css, outputs2
+		getAttrbs(args, obj2)
+		ss_obj2, si_obj2, sp_obj2 = outputs2
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
-		ss_obj1 = set(obj1.getSupportedServiceNames()) if hasattr(obj1, "getSupportedServiceNames") else set()  # obj1のサービス名の集合。
-		ss_obj2 = set(obj2.getSupportedServiceNames()) if hasattr(obj2, "getSupportedServiceNames") else set()  # obj2のサービス名の集合。
-		si_obj1 = set(i.typeName for i in obj1.getTypes()) if hasattr(obj1, "getTypes") else set()  # obj1のインターフェイス名の集合。継承されているインターフェイス名が取得できていない。
-		si_obj2 = set(i.typeName for i in obj2.getTypes()) if hasattr(obj2, "getTypes") else set()  # obj2のインターフェイス名の集合。継承されているインターフェイス名が取得できていない。
 		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
 		st_ncoms = ss_obj1^ss_obj2  # 共通に含まれる以外のサービス。
 		st_ncomi = si_obj1^si_obj2  # 共通に含まれる以外のインターフェイス。
+		st_ncomp = sp_obj1^sp_obj2  # 共通に含まれる以外のプロパティ。
 		st_oms = st_ncoms.copy()  # 共通に含まれるサービス以外のサービスの出力は抑制する。
 		st_omi = st_ncomi.copy() | idlsset  # 共通に含まれるインターフェイス以外とデフォルト出力抑制インターフェイスの出力は抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
+		st_omp = st_ncomp.copy()  # 共通に含まれるプロパティ以外のサービスの出力は抑制する。
+		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms, st_omp
 		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
 		st_coms = st_oms - st_ncoms  # 共通に含まれるとしてすでに出力したサービス。
 		st_comi = (st_omi - st_ncomi) | idlsset  # 共通に含まれるとしてすでに出力したインターフェイスとデフォルト出力抑制インターフェイス。
+		st_comp = st_omp - st_ncomp  # 共通に含まれるとしてすでに出力したプロパティ。
 		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
 		st_oms = ss_obj2 | st_coms # obj2に含まれるサービスと共通に含まれるサービスは抑制する。
 		st_omi = si_obj2 | st_comi # obj2に含まれるインターフェイスと共通に含まれるインターフェイスは抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
+		st_omp = sp_obj2 | st_comp # obj2に含まれるプロパティと共通に含まれるプロパティは抑制する。
+		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms, st_omp
 		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
 		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
 		st_oms = ss_obj1 | st_coms  # obj1に含まれるサービスと共通に含まれるサービスは抑制する。
 		st_omi = si_obj1 | st_comi  # obj1に含まれるインターフェイスと共通に含まれるインターフェイスは抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
+		st_omp = sp_obj1 | st_comp # obj1に含まれるプロパティと共通に含まれるプロパティは抑制する。
+		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms, st_omp		
 		createTree(args, obj2)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 def createHtml(ctx, offline, outputs):  # ウェブブラウザに出力。

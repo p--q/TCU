@@ -7,7 +7,7 @@ from .common import localization
 # from .common import enableRemoteDebugging  # デバッグ用デコレーター
 # @enableRemoteDebugging
 def createTree(args, obj):
-	ctx, configurationprovider, css, fns, st_omi, outputs, s, st_oms = args  # st_omi: スタックに追加しないインターフェイス名の集合。ss_omi: : スタックに追加しないサービス名の集合。
+	ctx, configurationprovider, css, fns, st_omi, outputs, s, st_oms, st_omp = args  # st_omi: スタックに追加しないインターフェイス名の集合。ss_omi: : スタックに追加しないサービス名の集合。
 	stack = []  # スタックを初期化。
 	st_si = False  #  サポートインターフェイス名の集合。
 	st_nontyps = set()  # TypeDescriptionオブジェクトを取得できないサービス。
@@ -72,7 +72,7 @@ def createTree(args, obj):
 						stack = [tdm.getByHierarchicalName(i) for i in sorted(st_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 						st_omi.update(st_si)  # すでにでてきたインターフェイス名をst_omiに追加して次は使わないようにする。
 	if stack:  # 起点となるサービスかインターフェイスがあるとき。
-		args = css, fns, st_omi, st_oms, stack, st_si, tdm, st_nontyps, obj
+		args = css, fns, st_omi, st_oms, stack, st_si, tdm, st_nontyps, obj, st_omp
 		generateOutputs(args)
 		removeBranch(s, outputs)  # 不要な枝を削除。置換する空白を渡す。
 	else:
@@ -101,7 +101,7 @@ def removeBranch(s, outputs):  # 不要な枝を削除。引数は半角スペ�
 # @enableRemoteDebugging
 def generateOutputs(args):  # 末裔から祖先を得て木を出力する。flagはオブジェクトが直接インターフェイスをもっているときにTrueになるフラグ。
 	reg_sqb = re.compile(r'\[\]')  # 型から角括弧ペアを取得する正規表現オブジェクト。
-	css, fns, st_omi, st_oms, stack, st_si, tdm, st_nontyps, obj = args
+	css, fns, st_omi, st_oms, stack, st_si, tdm, st_nontyps, obj, st_omp = args
 	lst_level = [1]*len(stack)  # stackの要素すべてについて階層を取得。
 	indent = "	  "  # インデントを設定。
 	m = 0  # 最大文字数を初期化。
@@ -109,7 +109,6 @@ def generateOutputs(args):  # 末裔から祖先を得て木を出力する。fl
 	t_itd = tuple()  # インターフェイスのTypeDescriptionオブジェクトの入れ物を初期化。
 	t_md = tuple()  # メソッドのTypeDescriptionオブジェクトの入れ物を初期化。
 	t_spd = tuple()  # サービス属性のTypeDescriptionオブジェクトの入れ物を初期化。
-	st_omp = set()  # すでに出力したプロパティ名を入れる集合。
 	def _consumeStack(stack):  # fnsの関数による出力順を変更してはいけない。	
 		def _format_type(typ):  # 属性がシークエンスのとき[]の表記を修正。
 			n = len(reg_sqb.findall(typ))  # 角括弧のペアのリストの数を取得。
