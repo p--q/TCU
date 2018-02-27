@@ -11,7 +11,7 @@ def getAttrbs(args, obj):
 	st_omi = set()  # インターフェイス名を入れる集合。
 	st_si = set()  #  最初のサポートインターフェイス名の集合。
 	st_nontyps = set()  # TypeDescriptionオブジェクトを取得できないサービスの集合。
-	tdm = ctx.getByName('/single tons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
+	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
 	def _idl_check(idl): # IDL名からTypeDescriptionオブジェクトを取得。
 		try:
 			return tdm.getByHierarchicalName(idl)  # IDL名からTypeDescriptionオブジェクトを取得。
