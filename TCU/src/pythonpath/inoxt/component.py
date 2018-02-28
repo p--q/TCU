@@ -11,6 +11,7 @@ from .trees import createTree
 from .wsgi import Wsgi, createHTMLfile
 from .common import localization
 from .notree import getAttrbs
+from .notree import createTree2
 # from .common import enableRemoteDebugging  # デバッグ用デコレーター
 IMPLE_NAME = None
 SERVICE_NAME = None
@@ -67,12 +68,31 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		createTree(args, obj)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 # 	@enableRemoteDebugging
-	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
+	def wtree2(self, obj1, obj2=None):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
-		_ = localization(configurationprovider)  # 地域化関数に置換。
 		
-		ss_obj1, nontdm_obj1, is_obj1, ps_obj1 = getAttrbs(ctx, css, obj1)
-		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(ctx, css, obj2)
+		
+		tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
+		_ = localization(configurationprovider)  # 地域化関数に置換。
+		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		fns = createFns(prefix, fns_keys, outputs)  # 出力関数の取得。
+		# 各オブジェクトのサービス名、インターフェイス名、プロパティ名を取得。
+		args = configurationprovider, outputs, tdm, css
+		ss_obj1, nontdm_obj1, is_obj1, ps_obj1 = getAttrbs([*args, obj1])  # obj1のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティ名を取得。
+		if obj2 is None:
+			args = tdm, css, fns, ss_obj1, nontdm_obj1, is_obj1, ps_obj1, idlsset
+			createTree2(args)  # obj1のサービスとインターフェイスのみ出力する。				
+		else:	
+			ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs([*args, obj2])  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティ名を取得。
+			# 出力すべき要素。
+			st_s = ss_obj1^ss_obj2  # 共通するサービス名。
+			st_non = nontdm_obj1^nontdm_obj2  # 共通するnontdmサービス名。
+			st_i = is_obj1^is_obj2  # 共通するインターフェイス名。
+			st_p = ps_obj1^ps_obj2  # 共通するプロパティ名。	
+	
+			
+			args = tdm, css, fns, st_s, st_non, st_i , st_p, idlsset
+			createTree2(args)  # obj1だけに含まれるサービスとインターフェイスを除いて出力する。	
 		
 		
 		
