@@ -9,9 +9,7 @@ from pq import XTcu  # 拡張機能で定義したインターフェイスをイ
 from .optiondialog import dilaogHandler
 from .trees import createTree
 from .wsgi import Wsgi, createHTMLfile
-from .common import localization
-from .notree import getAttrbs
-from .notree import createTree2
+from .wcompare import wCompare
 # from .common import enableRemoteDebugging  # デバッグ用デコレーター
 IMPLE_NAME = None
 SERVICE_NAME = None
@@ -70,66 +68,10 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 # 	@enableRemoteDebugging
 	def wtree2(self, obj1, obj2=None):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
-		
-		
-		tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
-		_ = localization(configurationprovider)  # 地域化関数に置換。
-		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
-		fns = createFns(prefix, fns_keys, outputs)  # 出力関数の取得。
-		# 各オブジェクトのサービス名、インターフェイス名、プロパティ名を取得。
-		args = configurationprovider, outputs, tdm, css
-		ss_obj1, nontdm_obj1, is_obj1, ps_obj1 = getAttrbs([*args, obj1])  # obj1のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティ名を取得。
-		if obj2 is None:
-			args = tdm, css, fns, ss_obj1, nontdm_obj1, is_obj1, ps_obj1, idlsset
-			createTree2(args)  # obj1のサービスとインターフェイスのみ出力する。				
-		else:	
-			ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs([*args, obj2])  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティ名を取得。
-			# 出力すべき要素。
-			st_s = ss_obj1^ss_obj2  # 共通するサービス名。
-			st_non = nontdm_obj1^nontdm_obj2  # 共通するnontdmサービス名。
-			st_i = is_obj1^is_obj2  # 共通するインターフェイス名。
-			st_p = ps_obj1^ps_obj2  # 共通するプロパティ名。	
-	
-			
-			args = tdm, css, fns, st_s, st_non, st_i , st_p, idlsset
-			createTree2(args)  # obj1だけに含まれるサービスとインターフェイスを除いて出力する。	
-		
-		
-		
-		outputs1 = []  # 結果を受け取るリスト。
-		args = ctx, css, outputs1
-		getAttrbs(args, obj1)
-		ss_obj1, si_obj1, sp_obj1 = outputs1
-		outputs2 = []  # 結果を受け取るリスト。
-		args = ctx, css, outputs2
-		getAttrbs(args, obj2)
-		ss_obj2, si_obj2, sp_obj2 = outputs2
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
-		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
-		st_ncoms = ss_obj1^ss_obj2  # 共通に含まれる以外のサービス。
-		st_ncomi = si_obj1^si_obj2  # 共通に含まれる以外のインターフェイス。
-		st_ncomp = sp_obj1^sp_obj2  # 共通に含まれる以外のプロパティ。
-		st_oms = st_ncoms.copy()  # 共通に含まれるサービス以外のサービスの出力は抑制する。
-		st_omi = st_ncomi.copy() | idlsset  # 共通に含まれるインターフェイス以外とデフォルト出力抑制インターフェイスの出力は抑制する。
-		st_omp = st_ncomp.copy()  # 共通に含まれるプロパティ以外のサービスの出力は抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms, st_omp
-		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
-		st_coms = st_oms - st_ncoms  # 共通に含まれるとしてすでに出力したサービス。
-		st_comi = (st_omi - st_ncomi) | idlsset  # 共通に含まれるとしてすでに出力したインターフェイスとデフォルト出力抑制インターフェイス。
-		st_comp = st_omp - st_ncomp  # 共通に含まれるとしてすでに出力したプロパティ。
-		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
-		st_oms = ss_obj2 | st_coms # obj2に含まれるサービスと共通に含まれるサービスは抑制する。
-		st_omi = si_obj2 | st_comi # obj2に含まれるインターフェイスと共通に含まれるインターフェイスは抑制する。
-		st_omp = sp_obj2 | st_comp # obj2に含まれるプロパティと共通に含まれるプロパティは抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms, st_omp
-		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
-		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
-		st_oms = ss_obj1 | st_coms  # obj1に含まれるサービスと共通に含まれるサービスは抑制する。
-		st_omi = si_obj1 | st_comi  # obj1に含まれるインターフェイスと共通に含まれるインターフェイスは抑制する。
-		st_omp = sp_obj1 | st_comp # obj1に含まれるプロパティと共通に含まれるプロパティは抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms, st_omp		
-		createTree(args, obj2)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
+		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		wCompare(args, obj1, obj2)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 def createHtml(ctx, offline, outputs):  # ウェブブラウザに出力。
 	outputs.append("</tt>")		
