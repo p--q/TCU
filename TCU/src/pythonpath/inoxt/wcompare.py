@@ -21,13 +21,14 @@ def wCompare(args, obj1, obj2):
 		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct。
 		ps_obj1name = set(i.Name for i in ps_obj1)  # プロパティだけProperty Structなので名前の集合を求めておく。
 		ps_obj2name = set(i.Name for i in ps_obj2)
+		args = tdm, css, fns, outputs
 		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
 		st_s = ss_obj1 ^ ss_obj2  # 共通するサービス名。
 		st_non = nontdm_obj1 ^ nontdm_obj2  # 共通するnontdmサービス名。
 		st_i = is_obj1 ^ is_obj2  # 共通するインターフェイス名。
 		st_pname = ps_obj1name ^ ps_obj2name  # 共通するプロパティ名。	
 		st_p = [i for i in obj1 if i.Name in st_pname]
-		args = tdm, css, fns, st_s, st_non, st_i , st_p, st_omi
+		args.extend(st_s, st_non, st_i , st_p, st_omi.copy())
 		createTree(args)  # 共通するサービスとインターフェイスを出力する。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
@@ -36,7 +37,7 @@ def wCompare(args, obj1, obj2):
 		st_i = is_obj1 - is_obj2 
 		st_pname = ps_obj1name - ps_obj2name
 		st_p = [i for i in obj1 if i.Name in st_pname]
-		args = tdm, css, fns, st_s, st_non, st_i , st_p, st_omi
+		args.extend(st_s, st_non, st_i , st_p, st_omi.copy())
 		createTree(args)
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
@@ -45,7 +46,7 @@ def wCompare(args, obj1, obj2):
 		st_i = is_obj2 - is_obj1 
 		st_pname = ps_obj2name - ps_obj1name
 		st_p = [i for i in obj2 if i.Name in st_pname]
-		args = tdm, css, fns, st_s, st_non, st_i , st_p, st_omi
+		args.extend(st_s, st_non, st_i , st_p, st_omi.copy())
 		createTree(args)		
 def getAttrbs(args, obj):
 	outputs, tdm, css = args
@@ -125,7 +126,7 @@ def getSuperInterface(st_is, tdms):  # 再帰的にインターフェイスの�
 				st_is.update(i.Name for i in lst_itd)  # スーパークラスのインターフェイス名を取得。
 				getSuperInterface(st_is, lst_itd)
 def createTree(args):
-	tdm, css, fns, st_s, st_non, st_i , st_p, st_omi = args  # st_pの要素はプロパティ名ではなくProperty Struct。
+	tdm, css, fns, outputs, st_s, st_non, st_i , st_p, st_omi = args  # st_pの要素はプロパティ名ではなくProperty Struct。
 	indent = "	  "  # インデントを設定。
 	st_oms, st_omp = set(), set()  # すでに取得したサービス名、プロパティ名を入れる集合。
 	consumeStack = createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp)  # クロージャーに値を渡す。
@@ -176,7 +177,30 @@ def createTree(args):
 		for i in props:  # 各プロパティについて。
 			branch = [indent*2]  # 枝をリセット。
 			branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
-			fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。			
+			fns["PROPERTY"]("".join(branch))  # 枝をつけて出力。	
+	removeBranch(indent, outputs)  # 不要な縦枝を削除。
+def removeBranch(indent, outputs):  # 不要な枝を削除。
+	v = "│   "  # 縦棒。
+	def _replaceBar(j, line):  #  不要な縦棒を空白に置換。
+		line = line.replace(v, indent, 1)
+		outputs[j] = line	
+	i = None;  # 縦棒の位置を初期化。	
+	n = len(outputs)  # 出力行数を取得。
+	for j in reversed(range(n)):  # 出力行を下からみていく。
+		line = outputs[j]  # 行の内容を取得。
+		if j == n - 1 :  # 最終行のとき
+			if v in line:  # 本来あってはならない縦棒があるとき。
+				i = line.find(v)  # 縦棒の位置を取得。
+				_replaceBar(j, line) #  不要な縦棒を空白に置換。
+			else:
+				break  # 最終行に縦棒がなければループを出る。
+		else:  # 最終行より上の行について。
+			if v.strip() in line[i]:  # 消去するべき縦棒があるとき
+				_replaceBar(j, line) #  不要な縦棒を空白に置換。
+			else:  # 縦棒が途切れたとき
+				line = line.replace("├─", "└─", 1)  # 下向きの分岐を消す。
+				outputs[j] = line
+				break		
 def getNonSuperInterfaces(tdm, st_i):  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
 	st_supi = set()  # スーパークラスのインターフェイス名を入れる集合。
 	for i in st_i:  # 各インターフェイス名について
