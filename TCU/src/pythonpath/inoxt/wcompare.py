@@ -131,26 +131,26 @@ def createTree(args):
 	indent = "	  "  # インデントを設定。
 	st_oms, st_omp = set(), set()  # すでに取得したサービス名、プロパティ名を入れる集合。
 	consumeStack = createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp)  # クロージャーに値を渡す。
-	non_ss = getNonSuperServices(tdm, st_s)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
+	non_ss = getNonSuperServices(tdm, st_s.copy())  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
 	if non_ss:  
 		stack = [tdm.getByHierarchicalName(i) for i in sorted(non_ss, reverse=True)]  # サービス名を降順にしてTypeDescriptionオブジェクトをスタックに取得。		
 		st_oms.update(non_ss)  # すでに取得したサービス名の集合に追加。
 	else:  # サービス名がないとき。
-		non_si = getNonSuperInterfaces(tdm, st_i)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。 
+		non_si = getNonSuperInterfaces(tdm, st_i.copy())  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。 
 		if non_si:  # インターフェイスがあるとき。
 			stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 			st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
 	consumeStack(stack)  # ツリーを出力。
 	st_s.difference_update(st_oms)  # すでに出力されたサービス名を除く。比較のときは出力抑制されたスーパークラスのサービス名がでてくる。
 	if st_s:  # まだ出力されていないサービスが残っているとき。
-		non_ss = getNonSuperServices(tdm, st_s)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
+		non_ss = getNonSuperServices(tdm, st_s.copy)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
 		if non_ss:  
 			stack = [tdm.getByHierarchicalName(i) for i in sorted(non_ss, reverse=True)]  # サービス名を降順にしてTypeDescriptionオブジェクトをスタックに取得。		
 			st_oms.update(non_ss) # すでに取得したサービス名の集合に追加。
 			consumeStack(stack)  # ツリーを出力。
 	st_i.difference_update(st_omi)  # すでに出力されたインターフェイス名を除く。サービスがあるのに、サービスを介さないインターフェイス名があるときにそれが残る。
 	if st_i:  # まだ出力されていないインターフェイスが残っているとき。
-		non_si = getNonSuperInterfaces(tdm, st_i)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
+		non_si = getNonSuperInterfaces(tdm, st_i.copy())  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
 		if non_si:  # インターフェイスがあるとき。
 			stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 			st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
@@ -202,23 +202,37 @@ def removeBranch(indent, outputs):  # 不要な枝を削除。
 				line = line.replace("├─", "└─", 1)  # 下向きの分岐を消す。
 				outputs[j] = line
 				break		
-def getNonSuperServices(tdm, st_s):  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
-	st_sups = set()  # スーパークラスのサービス名を入れる集合。
-	for i in st_s:  # 各サービス名について
-		j = tdm.getByHierarchicalName(i)
-		if not j.isSingleInterfaceBased():  # old-styleサービスのとき。
-			lst_super = list(j.getMandatoryServices())  # スーパークラスのTypeDescriptionオブジェクトを取得。
-			lst_super.extend(j.getOptionalServices())  # スーパークラスのTypeDescriptionオブジェクトを取得。
-			st_sups.update(lst_super)  # スーパークラスのサービス名を入れる集合に追加。
-	return st_s.difference(st_sups)  # スーパークラスにあたるサービス名を除いた集合を返す。		
-def getNonSuperInterfaces(tdm, st_i):  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
-	st_supi = set()  # スーパークラスのインターフェイス名を入れる集合。
-	for i in st_i:  # 各インターフェイス名について
-		j = tdm.getByHierarchicalName(i)
-		lst_super = list(j.getBaseTypes())  # スーパークラスのTypeDescriptionオブジェクトを取得。
-		lst_super.extend(j.getOptionalBaseTypes())  # スーパークラスのTypeDescriptionオブジェクトを取得。
-		st_supi.update(lst_super)  # スーパークラスのインターフェイス名を入れる集合に追加。
-	return st_i.difference(st_supi)  # スーパークラスにあたるインターフェイス名を除いた集合を返す。			
+def getNonSuperServices(tdm, st):  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
+	s = st.copy()  # 元の集合。
+	st_sup = set()  # スーパークラス名を入れる集合。
+	while st:  # サービス名がなくなるまで実行。
+		j = tdm.getByHierarchicalName(st.pop())  # スタックのサービス名のTypeDescriptionオブジェクトを取得。
+		getSuperServices(st, st_sup, j)
+	return s - st_sup	# スーパークラスのサービス名を除いた集合を返す。	
+def getSuperServices(st, st_sup, j):  # スーパーサービス名を取得してstから削除する。	
+	if not j.isSingleInterfaceBased():  # old-styleサービスのときはスーパークラスのサービスがありうる。
+		lst_super = list(j.getMandatoryServices())  # スーパークラスのTypeDescriptionオブジェクトを取得。
+		lst_super.extend(j.getOptionalServices())  # スーパークラスのTypeDescriptionオブジェクトを取得。	
+		names = [i.Name for i in lst_super]
+		st.difference_update(names)  # スーパーサービス名をスタックから削除する。
+		st_sup.update(names)  # スーパークラス名を取得する。
+		for j in lst_super:  # 各スーパークラスのTypeDescriptionオブジェクトについて。
+			getSuperServices(st, st_sup, j)
+def getNonSuperInterfaces(tdm, st):  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
+	s = st.copy()  # 元の集合。
+	st_sup = set()  # スーパークラス名を入れる集合。
+	while st:  # サービス名がなくなるまで実行。
+		j = tdm.getByHierarchicalName(st.pop())  # スタックのサービス名のTypeDescriptionオブジェクトを取得。
+		getSuperInterfaces(st, st_sup, j)
+	return s - st_sup	# スーパークラスのサービス名を除いた集合を返す。	
+def getSuperInterfaces(st, st_sup, j):  # スーパーインターフェイス名を取得してstから削除する。	
+	lst_super = list(j.getBaseTypes())  # スーパークラスのTypeDescriptionオブジェクトを取得。
+	lst_super.extend(j.getOptionalBaseTypes())  # スーパークラスのTypeDescriptionオブジェクトを取得。	
+	names = [i.Name for i in lst_super]
+	st.difference_update(names)  # スーパーサービス名をスタックから削除する。
+	st_sup.update(names)  # スーパークラス名を取得する。
+	for j in lst_super:  # 各スーパークラスのTypeDescriptionオブジェクトについて。
+		getSuperInterfaces(st, st_sup, j)				
 def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):	
 		reg_sqb = re.compile(r'\[\]')  # 型から角括弧ペアを取得する正規表現オブジェクト。
 		inout_dic = {(True, False): "[in]", (False, True): "[out]", (True, True): "[inout]"}  # メソッドの引数のinout変換辞書。	
