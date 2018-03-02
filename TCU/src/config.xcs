@@ -38,7 +38,7 @@
 			<prop
 				oor:name="IgnoredIDLs"
 				oor:type="xs:string">
-				<value>.uno.XInterface,.lang.XTypeProvider,.lang.XServiceInfo,.uno.XWeak,.lang.XComponent,.lang.XInitialization,.lang.XMain,.uno.XAggregation,.lang.XUnoTunnel
+				<value>.uno.XInterface,.lang.XTypeProvider,.lang.XServiceInfo,.uno.XWeak,.lang.XMain,.uno.XAggregation,.lang.XUnoTunnel,X\w*Listener
 				</value>
 			</prop>
 		</group>
