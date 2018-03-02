@@ -7,10 +7,8 @@ from com.sun.star.lang import XServiceInfo
 from com.sun.star.awt import XContainerWindowEventHandler
 from pq import XTcu  # 拡張機能で定義したインターフェイスをインポート。
 from .optiondialog import dilaogHandler
-from .trees import createTree
 from .wsgi import Wsgi, createHTMLfile
 from .wcompare import wCompare
-# from .common import enableRemoteDebugging  # デバッグ用デコレーター
 IMPLE_NAME = None
 SERVICE_NAME = None
 def create(ctx, *args, imple_name, service_name):
@@ -54,17 +52,9 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		ctx, configurationprovider, css, fns_keys, dummy_offline, dummy_prefix, idlsset = getConfigs(self.consts)
 		outputs = []
 		fns = {key: outputs.append for key in fns_keys}
-		args = ctx, configurationprovider, css, fns, idlsset, outputs, " ", set(), set()
-		createTree(args, obj)
+		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		wCompare(args, obj, None)
 		return outputs
-# 	def wtree(self, obj):  # ブラウザに出力。
-# 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
-# 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
-# 		fns = createFns(prefix, fns_keys, outputs)
-# 		args = ctx, configurationprovider, css, fns, idlsset, outputs, "&nbsp;", set(), set()
-# 		createTree(args, obj)
-# 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
-# 	@enableRemoteDebugging
 	def wtree(self, obj):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
@@ -74,7 +64,7 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
-		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
 		wCompare(args, obj1, obj2)

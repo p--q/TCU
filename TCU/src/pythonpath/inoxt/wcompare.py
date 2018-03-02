@@ -4,9 +4,7 @@ import re
 from .common import localization
 from com.sun.star.container import NoSuchElementException
 from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
-# from .common import enableRemoteDebugging  # デバッグ用デコレーター import pydevd; pydevd.settrace(stdoutToServer=True, stderrToServer=True)
-# @enableRemoteDebugging
-def wCompare(args, obj1, obj2):
+def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer=True, stderrToServer=True)
 	ctx, configurationprovider, css, fns, st_omi, outputs = args  # st_omi: スタックに追加しないインターフェイス名の集合。
 	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
 	global _  # グローバルな_を置換する。

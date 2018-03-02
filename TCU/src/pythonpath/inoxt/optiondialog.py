@@ -6,7 +6,6 @@ from com.sun.star.style.VerticalAlignment import MIDDLE, BOTTOM
 from com.sun.star.awt import XActionListener, XMouseListener
 from com.sun.star.ui.dialogs.ExecutableDialogResults import OK
 from .common import localization
-# from .common import enableRemoteDebugging  # デバッグ用デコレーター
 def dilaogHandler(consts, dialog, eventname):
 	ctx, smgr, configurationprovider, css, properties, nodepath, simplefileaccess = consts
 	global _  # グローバルな_を地域化関数に置換する。
