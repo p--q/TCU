@@ -20,36 +20,39 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 	if obj2 is None:  # obj2がないときは比較しない。
 		treeCreator(tdm, css, fns, outputs, st_omi)(ss_obj1, nontdm_obj1, is_obj1, ps_obj1)  # obj1のサービスとインターフェイスのみ出力する。			
 	else:  # obj2があるときはobj1と比較する。	
-		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct、の集合。
+		ss_obj2, nontdm_obj2, is_obj2, dummy_ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct、の集合。
 		is_obj2.difference_update(st_omi)  # 出力しないインターフェイス名を除いておく。
 		[st_omi.update(filter(lambda x: re.search(p, x), is_obj2)) for p in patterns]  # オブジェックトのインターフェイス名の集合から正規表現のパターンに一致する名前をst_omiに追加する。
 		createTree = treeCreator(tdm, css, fns, outputs, st_omi)  # createTreeを取得。
 		is_obj2.difference_update(st_omi)  # 正規表現で取得した出力しないインターフェイス名を除いておく。
-		ps_obj1name = set(i.Name for i in ps_obj1)  # プロパティだけProperty Structなので名前の集合を求めておく。
-		ps_obj2name = set(i.Name for i in ps_obj2)
+# 		ps_obj1name = set(i.Name for i in ps_obj1)  # プロパティだけProperty Structなので名前の集合を求めておく。
+# 		ps_obj2name = set(i.Name for i in ps_obj2)
 		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
 		st_s = ss_obj1 & ss_obj2  # 共通するサービス名。
 		st_non = nontdm_obj1 & nontdm_obj2  # 共通するnontdmサービス名。
 		st_i = is_obj1 & is_obj2  # 共通するインターフェイス名。
-		st_pname = ps_obj1name & ps_obj2name  # 共通するプロパティ名。	
-		st_p = set(i for i in ps_obj1 if i.Name in st_pname)
-		omis = createTree(st_s, st_non, st_i, st_p)  # 共通するサービスとインターフェイスを出力する。出力したサービス名、インターフェイス名、プロパティ名が返る。
+		
+# 		st_pname = ps_obj1name & ps_obj2name  # 共通するプロパティ名。	
+# 		st_p = set(i for i in ps_obj1 if i.Name in st_pname)
+		
+		omis = createTree(st_s, st_non, st_i, set())  # 共通するサービスとインターフェイスを出力する。出力したサービス名、インターフェイス名、プロパティ名が返る。
+# 		omis = createTree(st_s, st_non, st_i, st_p)  # 共通するサービスとインターフェイスを出力する。出力したサービス名、インターフェイス名、プロパティ名が返る。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
 		st_s = ss_obj1 - ss_obj2
 		st_non = nontdm_obj1 - nontdm_obj2
 		st_i = is_obj1 - is_obj2
-		st_pname = ps_obj1name - ps_obj2name
-		st_p = set(i for i in ps_obj1 if i.Name in st_pname)
-		omis = createTree(st_s, st_non, st_i, st_p, omis=omis)  # obj1のみのサービスとインターフェイスを出力する。すでに出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。
+# 		st_pname = ps_obj1name - ps_obj2name
+# 		st_p = set(i for i in ps_obj1 if i.Name in st_pname)
+		omis = createTree(st_s, st_non, st_i, set(), omis=omis)  # obj1のみのサービスとインターフェイスを出力する。すでに出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
 		st_s = ss_obj2 - ss_obj1
 		st_non = nontdm_obj2 - nontdm_obj1
 		st_i = is_obj2 - is_obj1
-		st_pname = ps_obj2name - ps_obj1name
-		st_p = set(i for i in ps_obj2 if i.Name in st_pname)
-		createTree(st_s, st_non, st_i, st_p, omis=omis)  # obj2のみのサービスとインターフェイスを出力する。	すでに出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。	
+# 		st_pname = ps_obj2name - ps_obj1name
+# 		st_p = set(i for i in ps_obj2 if i.Name in st_pname)
+		createTree(st_s, st_non, st_i, set(), omis=omis)  # obj2のみのサービスとインターフェイスを出力する。	すでに出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。	
 def getAttrbs(args, obj):
 	outputs, tdm, css = args
 	st_ss, st_nontdm, st_is, st_ps = [set() for i in range(4)]  # サービス名、TypeDescriptionオブジェクトを取得できないサービス名、インターフェイス名を入れる集合、プロパティのみProperty Structを返す。
