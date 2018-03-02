@@ -91,7 +91,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	cellcursor = sheet.createCursor()  # Get the cell cursor
 	tcu.wcompare(cells, cellcursor)  # Compare objects
 
-
+![2018-03-02_195200](https://user-images.githubusercontent.com/6964955/36895712-3c803c38-1e53-11e8-9e85-a7f2f3dc865d.png)
 
 ## Script Examples
 
