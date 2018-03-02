@@ -23,21 +23,22 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 ## Usage
 
 	# Instantiate with IDL name "pq.Tcu".
-	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # smgr: service manager, ctx: component context
-	
 	# wtree() method outputs trees to the default browser.
 	# When outputting to the web browser, anchors are attached to the IDL reference.
 	# wtree() method can be executed only once.
-	tcu.wtree(arg)  # arg is an UNO object or a string of IDL full name.
-	
+	# arg is an UNO object or a string of IDL full name.
 	# tree() method returns a tuple of lines.
-	s = tcu.tree(arg)    # arg is a UNO object or a string of IDL full name.
-	print("\n".join(ｓ))　　# By joining the elements of the tuple with a line feed code we get the following tree.
-
+	# arg is a UNO object or a string of IDL full name.
+	# By joining the elements of the tuple with a line feed code we get the following tree.
 	# When component context is used as an argument.
 	# "com.sun.star" is omitted.
 	# The interface outputted once does not displayed.
-	object
+	
+	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  
+	tcu.wtree(print("\n".join(tcu.tree(ctx))))
+	
+	Connected to a running office ...
+	Using LibreOffice 5.4
 	├─.container.XNameContainer
 	│   │   void  insertByName( [in] string aName,
 	│   │                       [in]    any aElement
@@ -60,38 +61,21 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	│   	  	  │   [string]  getElementNames()
 	│   	  	  │    boolean  hasByName( [in] string aName)
 	│   	  	  └─.container.XElementAccess
-	│   	  	  	  │      type  getElementType()
-	│   	  	  	  │   boolean  hasElements()
-	│   	  	  	  └─.uno.XInterface
-	│   	  	  	  	  	  void  acquire()
-	│   	  	  	  	  	   any  queryInterface( [in] type aType)
-	│   	  	  	  	  	  void  release()
+	│   	  	  	  	     type  getElementType()
+	│   	  	  	  	  boolean  hasElements()
 	├─.lang.XComponent
 	│   	  void  addEventListener( [in] .lang.XEventListener xListener)
 	│   	  void  dispose()
 	│   	  void  removeEventListener( [in] .lang.XEventListener aListener)
-	├─.lang.XTypeProvider
-	│   	  [byte]  getImplementationId()
-	│   	  [type]  getTypes()
-	├─.uno.XComponentContext
-	│   	  .lang.XMultiComponentFactory  getServiceManager()
-	│   	                           any  getValueByName( [in] string Name)
-	└─.uno.XWeak
-			  .uno.XAdapter  queryAdapter()
+	└─.uno.XComponentContext
+			  .lang.XMultiComponentFactory  getServiceManager()
+						   any  getValueByName( [in] string Name)
 
 	# wcompare() method compares the services and interfaces of the two objects and outputs the results to the web browser.
 	# It compares interfaces acquired by getTypes() method.
-	ctx = XSCRIPTCONTEXT.getComponentContext()  # Get the component context
-	smgr = ctx.getServiceManager()  # Get the service manager
-	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # Instantiate TCU
-	doc = XSCRIPTCONTEXT.getDocument()  # Get a Calc document
-	sheets = doc.getSheets()  # Get a sheet collection
-	sheet = sheets[0]  # Retrieve the first sheet
-	cells = sheet[2:5, 3:6]  # Row index 2 or more and less than 5, column index 3 or more and less than 6 (that is, D 3: same as F 5) cell range. 
-	cellcursor = sheet.createCursor()  # Get the cell cursor
-	tcu.wcompare(cells, cellcursor)  # Compare objects
 
-## Example of Output
+
+## Example of Output of wtree() method
 
 	def macro():
 		ctx = XSCRIPTCONTEXT.getComponentContext() 
