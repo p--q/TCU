@@ -6,7 +6,7 @@ Output the API tee from the UNO object or IDL name.
 
 - The confirmed environment is as follows.
 
-  - LibreOffice 5.2, 5.3, 5.4 in Ubuntu 14.04 32bit
+  - LibreOffice 5.4 in Ubuntu 14.04 32bit
 
   - LibreOffice 5.4 in Windows 10 Home 64bit
 
@@ -91,6 +91,16 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	cellcursor = sheet.createCursor()  # Get the cell cursor
 	tcu.wcompare(cells, cellcursor)  # Compare objects
 
+## Example of Output
+
+	def macro():
+		ctx = XSCRIPTCONTEXT.getComponentContext() 
+		smgr = ctx.getServiceManager()
+		tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)
+		tcu.wtree(ctx)
+
+![2018-03-02_195200](https://user-images.githubusercontent.com/6964955/36895712-3c803c38-1e53-11e8-9e85-a7f2f3dc865d.png)
+
 ## Script Examples
 
 - For automation
@@ -105,9 +115,13 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
     - Output the API tree of the document that launched the macro.
 
+## Links to pages with output of TCU
+
+<a href="https://p--q.blogspot.jp/2017/11/libreoffice594.html">LibreOffice5(94)サービスとインターフェース一覧が載っているページの一覧</a>
+
 ## Options
 
-![2017-09-24_002602](https://user-images.githubusercontent.com/6964955/30774573-a9179286-a0bf-11e7-907f-2131c148ceae.png)
+![2018-03-02_194047](https://user-images.githubusercontent.com/6964955/36895375-0827341a-1e52-11e8-87ba-f72d2f98ba11.png)
 
 - **API Reference URL** : Specify the address to <a href="https://api.libreoffice.org/docs/idl/ref/">LibreOffice: Main Page</a>.
 
@@ -128,8 +142,6 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 - Anchors output by wtree() method other than services, interfaces, exceptions, Structs are invalid. ex. enum, typedef.
 
 - wtree() method can be executed only once per process.
-
-- In the wcompare() method, branches are cut off or there is an interface name which is not displayed.
 
 ## Release notes
 
@@ -156,6 +168,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 2018-2-3 version 1.0.6 Added function to correct incorrect IDL(com.sun.star.AccessibleSpreadsheetDocumentView). 
 
 2018-2-8 version 1.0.7 Changed branch of property not via service.
+
+2018-3-2 version 2.0.0 Changed algorithm. Fixed an incorrect output of wcompare() method. Changed default suppression interfaces. Python regular expressions enabled.
 
 ## Tools
 
