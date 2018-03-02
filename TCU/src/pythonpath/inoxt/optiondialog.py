@@ -27,7 +27,7 @@ def dilaogHandler(consts, dialog, eventname):
 		addControl("FixedText", {"PositionX": 11, "PositionY": 67, "Width": 258, "Height": 15, "Label": _("Local Reference Path:"), "NoLabel": True, "VerticalAlign": BOTTOM}) 
 		addControl("FixedText", {"Name": "RefDir" , "PositionX": 11, "PositionY": 82, "Width": 230, "Height": 15, "Label": path, "NoLabel": True, "VerticalAlign": BOTTOM})  
 		addControl("Button", {"PositionX": 242, "PositionY": 82, "Width": 27, "Height": 15, "Label": _("~Browse")}, {"setActionCommand": "folderpicker", "addActionListener": actionlistener})
-		addControl("FixedText", {"PositionX": 11, "PositionY": 107, "Width": 258, "Height": 15, "Label": _("Ignored Interfaces:"), "NoLabel": True, "VerticalAlign": MIDDLE}) 
+		addControl("FixedText", {"PositionX": 11, "PositionY": 107, "Width": 258, "Height": 15, "Label": _("Ignored Interfaces (Python regex patterns can be used, excluding dots):"), "NoLabel": True, "VerticalAlign": MIDDLE}) 
 		addControl("Edit", {"Name": "IgnoredIdls", "PositionX": 5, "PositionY": 124, "Width": 268, "Height": 96, "MultiLine": True, "Text": idlsedit})  
 		addControl("Button", {"PositionX": 218, "PositionY": 224, "Width": 55, "Height": 15, "Label": _("~Restore Defaults")}, {"setActionCommand": "restore","addActionListener": actionlistener})
 		if os.path.exists(path):

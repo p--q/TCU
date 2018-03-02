@@ -4,49 +4,54 @@ import re
 from .common import localization
 from com.sun.star.container import NoSuchElementException
 from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
-# from .common import enableRemoteDebugging  # デバッグ用デコレーター
+# from .common import enableRemoteDebugging  # デバッグ用デコレーター import pydevd; pydevd.settrace(stdoutToServer=True, stderrToServer=True)
 # @enableRemoteDebugging
 def wCompare(args, obj1, obj2):
 	ctx, configurationprovider, css, fns, st_omi, outputs = args  # st_omi: スタックに追加しないインターフェイス名の集合。
 	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
 	global _  # グローバルな_を置換する。
 	_ = localization(configurationprovider)  # 地域化関数に置換。
+	reg_p = re.compile(r'[^_a-zA-Z0-9\.]')  # アンダースコア、ドット、数字、文字以外のものを含んでいるものは正規表現パターンと判断する。
+	patterns = set(i for i in st_omi if reg_p.search(i))  # 正規表現のパターンになっている要素のみをst_omiから集合に取得。
+	st_omi.difference_update(patterns)  # st_omiから正規表現のパターンを除く。
 	args = outputs, tdm, css
-	ss_obj1, nontdm_obj1, is_obj1, ps_obj1 = getAttrbs(args, obj1)  # obj1のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct。
+	ss_obj1, nontdm_obj1, is_obj1, ps_obj1 = getAttrbs(args, obj1)  # obj1のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct、の集合。
+	is_obj1.difference_update(st_omi)  # 出力しないインターフェイス名を除いておく。
+	[st_omi.update(filter(lambda x: re.search(p, x), is_obj1)) for p in patterns]  # オブジェックトのインターフェイス名の集合から正規表現のパターンに一致する名前をst_omiに追加する。
+	is_obj1.difference_update(st_omi)  # 正規表現で取得した出力しないインターフェイス名を除いておく。
 	if obj2 is None:  # obj2がないときは比較しない。
-		args = tdm, css, fns, outputs, ss_obj1, nontdm_obj1, is_obj1, ps_obj1, st_omi
-		createTree(args)  # obj1のサービスとインターフェイスのみ出力する。				
+		treeCreator(tdm, css, fns, outputs, st_omi)(ss_obj1, nontdm_obj1, is_obj1, ps_obj1)  # obj1のサービスとインターフェイスのみ出力する。			
 	else:  # obj2があるときはobj1と比較する。	
-		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct。
+		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct、の集合。
+		is_obj2.difference_update(st_omi)  # 出力しないインターフェイス名を除いておく。
+		[st_omi.update(filter(lambda x: re.search(p, x), is_obj2)) for p in patterns]  # オブジェックトのインターフェイス名の集合から正規表現のパターンに一致する名前をst_omiに追加する。
+		createTree = treeCreator(tdm, css, fns, outputs, st_omi)  # createTreeを取得。
+		is_obj2.difference_update(st_omi)  # 正規表現で取得した出力しないインターフェイス名を除いておく。
 		ps_obj1name = set(i.Name for i in ps_obj1)  # プロパティだけProperty Structなので名前の集合を求めておく。
 		ps_obj2name = set(i.Name for i in ps_obj2)
-		args = tdm, css, fns, outputs
 		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
-		st_s = ss_obj1 ^ ss_obj2  # 共通するサービス名。
-		st_non = nontdm_obj1 ^ nontdm_obj2  # 共通するnontdmサービス名。
-		st_i = is_obj1 ^ is_obj2  # 共通するインターフェイス名。
-		st_pname = ps_obj1name ^ ps_obj2name  # 共通するプロパティ名。	
-		st_p = [i for i in obj1 if i.Name in st_pname]
-		args.extend(st_s, st_non, st_i , st_p, st_omi.copy())
-		createTree(args)  # 共通するサービスとインターフェイスを出力する。
+		st_s = ss_obj1 & ss_obj2  # 共通するサービス名。
+		st_non = nontdm_obj1 & nontdm_obj2  # 共通するnontdmサービス名。
+		st_i = is_obj1 & is_obj2  # 共通するインターフェイス名。
+		st_pname = ps_obj1name & ps_obj2name  # 共通するプロパティ名。	
+		st_p = [i for i in ps_obj1 if i.Name in st_pname]
+		omis = createTree(st_s, st_non, st_i, st_p)  # 共通するサービスとインターフェイスを出力する。出力したサービス名、インターフェイス名、プロパティ名が返る。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
-		st_s = ss_obj1 - ss_obj2  
-		st_non = nontdm_obj1 - nontdm_obj2  
-		st_i = is_obj1 - is_obj2 
+		st_s = ss_obj1 - ss_obj2
+		st_non = nontdm_obj1 - nontdm_obj2
+		st_i = is_obj1 - is_obj2
 		st_pname = ps_obj1name - ps_obj2name
-		st_p = [i for i in obj1 if i.Name in st_pname]
-		args.extend(st_s, st_non, st_i , st_p, st_omi.copy())
-		createTree(args)
+		st_p = [i for i in ps_obj1 if i.Name in st_pname]
+		omis = createTree(st_s, st_non, st_i, st_p, omis=omis)  # obj1のみのサービスとインターフェイスを出力する。すでに出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
-		st_s = ss_obj2 - ss_obj1  
-		st_non = nontdm_obj2 - nontdm_obj1  
-		st_i = is_obj2 - is_obj1 
+		st_s = ss_obj2 - ss_obj1
+		st_non = nontdm_obj2 - nontdm_obj1
+		st_i = is_obj2 - is_obj1
 		st_pname = ps_obj2name - ps_obj1name
-		st_p = [i for i in obj2 if i.Name in st_pname]
-		args.extend(st_s, st_non, st_i , st_p, st_omi.copy())
-		createTree(args)		
+		st_p = [i for i in ps_obj2 if i.Name in st_pname]
+		createTree(st_s, st_non, st_i, st_p, omis=omis)  # obj2のみのサービスとインターフェイスを出力する。	すでに出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。	
 def getAttrbs(args, obj):
 	outputs, tdm, css = args
 	st_ss, st_nontdm, st_is, st_ps = [set() for i in range(4)]  # サービス名、TypeDescriptionオブジェクトを取得できないサービス名、インターフェイス名を入れる集合、プロパティのみProperty Structを返す。
@@ -122,58 +127,64 @@ def getSuperInterface(st_is, tdms):  # 再帰的にインターフェイスの�
 			if lst_itd:  # スーパークラスのインターフェイスがあるとき。
 				st_is.update(i.Name for i in lst_itd)  # スーパークラスのインターフェイス名を取得。
 				getSuperInterface(st_is, lst_itd)
-def createTree(args):
-	tdm, css, fns, outputs, st_s, st_non, st_i , st_p, st_omi = args  # st_pの要素はプロパティ名ではなくProperty Struct。
-	indent = "	  "  # インデントを設定。
-	st_oms, st_omp = set(), set()  # すでに取得したサービス名、プロパティ名を入れる集合。
-	consumeStack = createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp)  # クロージャーに値を渡す。
-	non_ss = selectNonSupers(tdm, st_s.copy(), getSuperServices)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
-	if non_ss:  
-		stack = [tdm.getByHierarchicalName(i) for i in sorted(non_ss, reverse=True)]  # サービス名を降順にしてTypeDescriptionオブジェクトをスタックに取得。		
-		st_oms.update(non_ss)  # すでに取得したサービス名の集合に追加。
-	else:  # サービス名がないとき。
-		non_si = selectNonSupers(tdm, st_i.copy(), getSuperInterfaces)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。 
-		if non_si:  # インターフェイスがあるとき。
-			stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
-			st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
-	consumeStack(stack)  # ツリーを出力。
-	st_s.difference_update(st_oms)  # すでに出力されたサービス名を除く。比較のときは出力抑制されたスーパークラスのサービス名がでてくる。
-	if st_s:  # まだ出力されていないサービスが残っているとき。
+def treeCreator(tdm, css, fns, outputs, omi):				
+	def createTree(st_s, st_non, st_i, st_p, *, omis=None):  # st_pの要素はプロパティ名ではなくProperty Struct。omisは出力を抑制する名前のタプルのタプル。
+		if omis is None:
+			st_oms, st_omi, st_omp = set(), omi.copy(), set()  # すでに取得したサービス名、プロパティ名を入れる集合。
+		else:
+			st_oms, st_omi, st_omp = omis  
+			st_omi.update(omi)  # デフォルトの出力抑制インターフェイスを追加する。
+		indent = "	  "  # インデントを設定。
+		consumeStack = createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp)  # クロージャーに値を渡す。
 		non_ss = selectNonSupers(tdm, st_s.copy(), getSuperServices)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
 		if non_ss:  
 			stack = [tdm.getByHierarchicalName(i) for i in sorted(non_ss, reverse=True)]  # サービス名を降順にしてTypeDescriptionオブジェクトをスタックに取得。		
-			st_oms.update(non_ss) # すでに取得したサービス名の集合に追加。
-			consumeStack(stack)  # ツリーを出力。
-	st_i.difference_update(st_omi)  # すでに出力されたインターフェイス名を除く。サービスがあるのに、サービスを介さないインターフェイス名があるときにそれが残る。
-	if st_i:  # まだ出力されていないインターフェイスが残っているとき。
-		non_si = selectNonSupers(tdm, st_i.copy(), getSuperInterfaces)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
-		if non_si:  # インターフェイスがあるとき。
-			stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
-			st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
-			consumeStack(stack)  # ツリーを出力。
-	if st_non:  # TypeDescriptionオブジェクトを取得できないサービスを出力する。コントロール関係は実装サービス名がここにでてくる。
-		for i in sorted(st_non):  # 昇順に並べて取得。
-			branch = ["├─"] 
-			branch.append(i.replace(css, ""))  # 一番最後のサービス名をbranchの要素に追加。
-			fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。	
-	properties = [i for i in st_p if not i.Name in st_omp]  # すでに出力されたプロパティを除く。Property Structのリストが返る。		
-	if properties:  # まだ出力していないプロパティが存在する時。
-		props = sorted(properties, key=lambda x: x.Name)  #Name属性で昇順に並べる。
-		m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
-		fns["NOLINK"]("└──")  # 枝の最後なので下に枝を出さない。
-		for i in props:  # 各プロパティについて。
-			branch = [indent*2]  # 枝をリセット。
-			branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
-			fns["PROPERTY"]("".join(branch))  # プロパティの行を出力。	
-	else:			
-		n = len(outputs)  # 出力行数を取得。
-		for j in reversed(range(n)):  # 出力行を下からみていく。
-			line = outputs[j]  # 行の内容を取得。
-			if "│   " in line:  # 下に続く縦棒があるとき
-				outputs[j] = line.replace("│   ", indent, 1)  # j行目のline内の左端の不要な縦棒を空白に置換。
-			elif "├─" in line:  # 下に続く分岐があるとき。
-				outputs[j] = line.replace("├─", "└─", 1)  # 分岐を終了枝に置換してループを出る。
-				break			
+			st_oms.update(non_ss)  # すでに取得したサービス名の集合に追加。
+		else:  # サービス名がないとき。
+			non_si = selectNonSupers(tdm, st_i.copy(), getSuperInterfaces)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。 
+			if non_si:  # インターフェイスがあるとき。
+				stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
+				st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
+		consumeStack(stack)  # ツリーを出力。
+		st_s.difference_update(st_oms)  # すでに出力されたサービス名を除く。比較のときは出力抑制されたスーパークラスのサービス名がでてくる。
+		if st_s:  # まだ出力されていないサービスが残っているとき。
+			non_ss = selectNonSupers(tdm, st_s.copy(), getSuperServices)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
+			if non_ss:  
+				stack = [tdm.getByHierarchicalName(i) for i in sorted(non_ss, reverse=True)]  # サービス名を降順にしてTypeDescriptionオブジェクトをスタックに取得。		
+				st_oms.update(non_ss) # すでに取得したサービス名の集合に追加。
+				consumeStack(stack)  # ツリーを出力。
+		st_i.difference_update(st_omi)  # すでに出力されたインターフェイス名を除く。サービスがあるのに、サービスを介さないインターフェイス名があるときにそれが残る。
+		if st_i:  # まだ出力されていないインターフェイスが残っているとき。
+			non_si = selectNonSupers(tdm, st_i.copy(), getSuperInterfaces)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
+			if non_si:  # インターフェイスがあるとき。
+				stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
+				st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
+				consumeStack(stack)  # ツリーを出力。
+		if st_non:  # TypeDescriptionオブジェクトを取得できないサービスを出力する。コントロール関係は実装サービス名がここにでてくる。
+			for i in sorted(st_non):  # 昇順に並べて取得。
+				branch = ["├─"] 
+				branch.append(i.replace(css, ""))  # 一番最後のサービス名をbranchの要素に追加。
+				fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。	
+		properties = [i for i in st_p if not i.Name in st_omp]  # すでに出力されたプロパティを除く。Property Structのリストが返る。		
+		if properties:  # まだ出力していないプロパティが存在する時。
+			props = sorted(properties, key=lambda x: x.Name)  #Name属性で昇順に並べる。
+			m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
+			fns["NOLINK"]("└──")  # 枝の最後なので下に枝を出さない。
+			for i in props:  # 各プロパティについて。
+				branch = [indent*2]  # 枝をリセット。
+				branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
+				fns["PROPERTY"]("".join(branch))  # プロパティの行を出力。	
+		else:			
+			n = len(outputs)  # 出力行数を取得。
+			for j in reversed(range(n)):  # 出力行を下からみていく。
+				line = outputs[j]  # 行の内容を取得。
+				if "│   " in line:  # 下に続く縦棒があるとき
+					outputs[j] = line.replace("│   ", indent, 1)  # j行目のline内の左端の不要な縦棒を空白に置換。
+				elif "├─" in line:  # 下に続く分岐があるとき。
+					outputs[j] = line.replace("├─", "└─", 1)  # 分岐を終了枝に置換してループを出る。
+					break	
+		return st_oms, st_omi-omi, st_omp  # 出力したサービス名、インターフェイス名、プロパティ名を返す。
+	return createTree			
 def selectNonSupers(tdm, st, getSupers):  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
 	s = st.copy()  # 元の集合。
 	st_sup = set()  # スーパークラス名を入れる集合。
@@ -209,7 +220,7 @@ def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):
 				for dummy in range(n):  # 角括弧の数だけ繰り返し。
 					typ = typ.replace("]", "", 1) + "]" 
 				return typ  # 訂正した表記を返す。			
-			def _stack_interface(lst_itd):  # インターフェイスをスタックに追加する。
+			def _stack_interface(lst_itd):  # インターフェイスをスタックに追加する。引数はインターフェイスのTypeDescriptionオブジェクトのリスト。
 				lst_itd = [i for i in lst_itd if not i.Name in st_omi]  # st_omiを除く。
 				stack.extend(sorted(lst_itd, key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。
 				lst_level.extend(level+1 for i in lst_itd)  # 枝分かれ番号を1増やして設定。

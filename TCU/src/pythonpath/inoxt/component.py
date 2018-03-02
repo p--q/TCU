@@ -65,7 +65,14 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 # 		createTree(args, obj)
 # 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 # 	@enableRemoteDebugging
-	def wtree(self, obj1, obj2=None):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
+	def wtree(self, obj):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
+		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
+		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		fns = createFns(prefix, fns_keys, outputs)
+		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		wCompare(args, obj, None)
+		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
+	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
