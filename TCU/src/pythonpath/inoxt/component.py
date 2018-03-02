@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import unohelper
 import re, os
-from com.sun.star.beans import PropertyValue
+from com.sun.star.beans import PropertyValue  # Struct
 from com.sun.star.lang import XServiceInfo
 from com.sun.star.awt import XContainerWindowEventHandler
 from pq import XTcu  # 拡張機能で定義したインターフェイスをインポート。
@@ -39,7 +39,6 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 	def getSupportedServiceNames(self):
 		return (SERVICE_NAME,)		
 	# XContainerWindowEventHandler
-# 	@enableRemoteDebugging
 	def callHandlerMethod(self, dialog, eventname, methodname):  # ブーリアンを返す必要あり。dialogはUnoControlDialog。 eventnameは文字列initialize, ok, backのいずれか。methodnameは文字列external_event。
 		if methodname=="external_event":  # Falseのときがありうる?
 			try:
@@ -75,7 +74,7 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 def createHtml(ctx, offline, outputs):  # ウェブブラウザに出力。
 	outputs.append("</tt>")		
-	html = "<br>".join(outputs)
+	html = "<br>".join(outputs).replace(" "*2, "&nbsp;"*2).replace(" "*3, "&nbsp;"*3).replace(" "*4, "&nbsp;"*4)  # 連続したスペースはブラウザで一つにされるのでnbspに置換する。一つのスペースを置換するとタグ内まで置換されるのでダメ。
 	title = "TCU - Tree Command for UNO"
 	if offline:  # ローカルリファレンスを使うときはブラウザのセキュリティの制限のためにhtmlファイルを開くようにしないとローカルファイルが開けない。
 		pathsettingssingleton = ctx.getByName('/singletons/com.sun.star.util.thePathSettings')
@@ -117,16 +116,15 @@ def createFns(prefix, fns_keys, outputs):
 		idl = regex.findall(item_with_branch)  # 正規表現でIDL名を抽出する。
 		if idl:
 			lnk = "<a href='{}{}com_1_1sun_1_1star{}.html' target='_blank'>{}</a>".format(prefix, typ, idl[0].replace(".", "_1_1"), idl[0])  # サービス名のアンカータグを作成。
-			outputs.append(item_with_branch.replace(" ", "&nbsp;").replace(idl[0], lnk))  # 半角スペースを置換後にサービス名をアンカータグに置換。
+			outputs.append(item_with_branch.replace(idl[0], lnk)) 
 		else:
-			outputs.append(item_with_branch.replace(" ", "&nbsp;"))  # 半角スペースを置換。	
+			outputs.append(item_with_branch)
 	def _fn(item_with_branch):  # サービス名とインターフェイス名以外を出力するときの関数。
 		idl = set(reg_idl.findall(item_with_branch)) # 正規表現でIDL名を抽出する。
 		inf = reg_i.findall(item_with_branch) # 正規表現でインターフェイス名を抽出する。
 		exc = reg_e.findall(item_with_branch) # 正規表現で例外名を抽出する。
 		idl.difference_update(inf, exc)  # IDL名のうちインターフェイス名と例外名を除く。
 		idl = list(idl)  # 残ったIDL名はすべてStructと考えて処理する。
-		item_with_branch = item_with_branch.replace(" ", "&nbsp;")  # まず半角スペースをHTMLに置換する。
 		for i in inf:  # インターフェイス名があるとき。
 			item_with_branch = _make_anchor("interface", i, item_with_branch)
 		for i in exc:  # 例外名があるとき。
@@ -139,7 +137,7 @@ def createFns(prefix, fns_keys, outputs):
 	def _fn_i(item_with_branch):  # インターフェイス名にアンカータグをつける。
 		_make_link("interface", reg_i, item_with_branch)	
 	def _fn_nolink(item_with_branch):
-		outputs.append(item_with_branch.replace(" ", "&nbsp;"))
+		outputs.append(item_with_branch)
 	fns = {key: _fn for key in fns_keys[2:5]}  # キー PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
 	fns[fns_keys[0]] = _fn_s  # SERVICE		
 	fns[fns_keys[1]] = _fn_i  # INTERFACE
