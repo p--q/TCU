@@ -35,7 +35,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	# The interface outputted once does not displayed.
 	
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  
-	tcu.wtree(print("\n".join(tcu.tree(ctx))))
+	print("\n".join(tcu.tree(ctx)))
 	
 	Connected to a running office ...
 	Using LibreOffice 5.4
