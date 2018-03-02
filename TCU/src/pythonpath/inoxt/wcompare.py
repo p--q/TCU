@@ -137,6 +137,7 @@ def treeCreator(tdm, css, fns, outputs, omi):
 		indent = "	  "  # インデントを設定。
 		consumeStack = createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp)  # クロージャーに値を渡す。
 		non_ss = selectNonSupers(tdm, st_s.copy(), getSuperServices)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
+		stack = []  # スタックを初期化。
 		if non_ss:  
 			stack = [tdm.getByHierarchicalName(i) for i in sorted(non_ss, reverse=True)]  # サービス名を降順にしてTypeDescriptionオブジェクトをスタックに取得。		
 			st_oms.update(non_ss)  # すでに取得したサービス名の集合に追加。
@@ -145,6 +146,8 @@ def treeCreator(tdm, css, fns, outputs, omi):
 			if non_si:  # インターフェイスがあるとき。
 				stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 				st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
+		if not stack:  # wcompare()のときはスタックがないときがありうる。
+			outputs.append(_("There is no service or interface."))  # サービスやインターフェイスがありません。				
 		consumeStack(stack)  # ツリーを出力。
 		st_s.difference_update(st_oms)  # すでに出力されたサービス名を除く。比較のときは出力抑制されたスーパークラスのサービス名がでてくる。
 		if st_s:  # まだ出力されていないサービスが残っているとき。
@@ -230,11 +233,16 @@ def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):
 				level = lst_level.pop()  # jの枝分かれ番号を取得。
 				typcls = j.getTypeClass()  # jのタイプクラスを取得。
 				branch = ["", ""]  # 枝をリセット。縦枝はインデックス0に文字列として追加する。枝分かれの枝はインデックス1の要素に入れる。
-				if level>1:  # 枝分かれ番号が2以上のとき。つまり左端の縦線のみのとき以外の行のときなので一番最初の枝分かれ以外のときすべてに該当。
-					branch[0] = "│   "  # 左端に縦枝をつける。不要な縦枝は最後に削ることにする。
-					p = 2  # 枝分かれ番号2から処理する。
-					for i in range(p, level):  # 枝分かれpからみていく。
-						branch[0] += "│   " if i in lst_level else indent  # スタックに同じ枝分かれ回数の要素があるときは縦枝を表示する。
+# 				if level>1:  # 枝分かれ番号が2以上のとき。つまり左端の縦線のみのとき以外の行のときなので一番最初の枝分かれ以外のときすべてに該当。
+# 					branch[0] = "│   "  # 左端に縦枝をつける。不要な縦枝は最後に削ることにする。
+# 					p = 2  # 枝分かれ番号2から処理する。
+# 					for i in range(p, level):  # 枝分かれpからみていく。
+# 						branch[0] += "│   " if i in lst_level else indent  # スタックに同じ枝分かれ回数の要素があるときは縦枝を表示する。
+				
+				branch[0] = "│   "  # 左端に縦枝をつける。不要な縦枝は最後に削ることにする。
+				for i in range(0, level):  # 枝分かれpからみていく。
+					branch[0] += "│   " if i in lst_level else indent  # スタックに同じ枝分かれ回数の要素があるときは縦枝を表示する。
+					
 				if typcls==INTERFACE or typcls==SERVICE:  # jがサービスかインターフェイスのとき。
 					if level==1: 
 						branch[1] = "├─"  # 枝分かれ番号1のときは常に下につづく分岐をつけて、すべての枝を出力してから修正する。
