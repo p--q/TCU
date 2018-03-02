@@ -155,6 +155,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-3-2 version 2.0.0 Changed algorithm. Fixed an incorrect output of wcompare() method. Changed default suppression interfaces. Python regular expressions enabled.
 
+2018-3-2 version 2.0.1 Stop comparing by property names in wcompare() method.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
