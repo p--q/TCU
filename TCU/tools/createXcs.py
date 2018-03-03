@@ -32,7 +32,7 @@ def createXcs(c):
 		nodetypes.append(Elem("info"))
 		nodetypes[-1].append(Elem("desc", text="Save IgnoredIDLs as text. 'com.sun.star' is omitted."))	
 		nodetypes.append(Elem("prop", {"oor:name": "IgnoredIDLs", "oor:type": "xs:string"}))
-		nodetypes[-1].append(Elem("value", text=".uno.XInterface,.lang.XTypeProvider,.lang.XServiceInfo,.uno.XWeak,.lang.XComponent,.lang.XInitialization,.lang.XMain,.uno.XAggregation,.lang.XUnoTunnel"))				
+		nodetypes[-1].append(Elem("value", text=".uno.XInterface,.lang.XTypeProvider,.lang.XServiceInfo,.uno.XWeak,.lang.XMain,.uno.XAggregation,.lang.XUnoTunnel,X\w*Listener"))		
 		# コンポーネントノードの作成
 		root.append(Elem("component"))
 		root[-1].append(Elem("group", {"oor:name": "Leaves"}))

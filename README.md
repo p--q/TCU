@@ -6,7 +6,7 @@ Output the API tee from the UNO object or IDL name.
 
 - The confirmed environment is as follows.
 
-  - LibreOffice 5.2, 5.3, 5.4 in Ubuntu 14.04 32bit
+  - LibreOffice 5.4 in Ubuntu 14.04 32bit
 
   - LibreOffice 5.4 in Windows 10 Home 64bit
 
@@ -23,21 +23,22 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 ## Usage
 
 	# Instantiate with IDL name "pq.Tcu".
-	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # smgr: service manager, ctx: component context
-	
 	# wtree() method outputs trees to the default browser.
 	# When outputting to the web browser, anchors are attached to the IDL reference.
 	# wtree() method can be executed only once.
-	tcu.wtree(arg)  # arg is an UNO object or a string of IDL full name.
-	
+	# arg is an UNO object or a string of IDL full name.
 	# tree() method returns a tuple of lines.
-	s = tcu.tree(arg)    # arg is a UNO object or a string of IDL full name.
-	print("\n".join(ｓ))　　# By joining the elements of the tuple with a line feed code we get the following tree.
-
+	# arg is a UNO object or a string of IDL full name.
+	# By joining the elements of the tuple with a line feed code we get the following tree.
 	# When component context is used as an argument.
 	# "com.sun.star" is omitted.
 	# The interface outputted once does not displayed.
-	object
+	
+	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  
+	tcu.wtree(print("\n".join(tcu.tree(ctx))))
+	
+	Connected to a running office ...
+	Using LibreOffice 5.4
 	├─.container.XNameContainer
 	│   │   void  insertByName( [in] string aName,
 	│   │                       [in]    any aElement
@@ -60,36 +61,29 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	│   	  	  │   [string]  getElementNames()
 	│   	  	  │    boolean  hasByName( [in] string aName)
 	│   	  	  └─.container.XElementAccess
-	│   	  	  	  │      type  getElementType()
-	│   	  	  	  │   boolean  hasElements()
-	│   	  	  	  └─.uno.XInterface
-	│   	  	  	  	  	  void  acquire()
-	│   	  	  	  	  	   any  queryInterface( [in] type aType)
-	│   	  	  	  	  	  void  release()
+	│   	  	  	  	     type  getElementType()
+	│   	  	  	  	  boolean  hasElements()
 	├─.lang.XComponent
 	│   	  void  addEventListener( [in] .lang.XEventListener xListener)
 	│   	  void  dispose()
 	│   	  void  removeEventListener( [in] .lang.XEventListener aListener)
-	├─.lang.XTypeProvider
-	│   	  [byte]  getImplementationId()
-	│   	  [type]  getTypes()
-	├─.uno.XComponentContext
-	│   	  .lang.XMultiComponentFactory  getServiceManager()
-	│   	                           any  getValueByName( [in] string Name)
-	└─.uno.XWeak
-			  .uno.XAdapter  queryAdapter()
+	└─.uno.XComponentContext
+			  .lang.XMultiComponentFactory  getServiceManager()
+						   any  getValueByName( [in] string Name)
 
 	# wcompare() method compares the services and interfaces of the two objects and outputs the results to the web browser.
 	# It compares interfaces acquired by getTypes() method.
-	ctx = XSCRIPTCONTEXT.getComponentContext()  # Get the component context
-	smgr = ctx.getServiceManager()  # Get the service manager
-	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # Instantiate TCU
-	doc = XSCRIPTCONTEXT.getDocument()  # Get a Calc document
-	sheets = doc.getSheets()  # Get a sheet collection
-	sheet = sheets[0]  # Retrieve the first sheet
-	cells = sheet[2:5, 3:6]  # Row index 2 or more and less than 5, column index 3 or more and less than 6 (that is, D 3: same as F 5) cell range. 
-	cellcursor = sheet.createCursor()  # Get the cell cursor
-	tcu.wcompare(cells, cellcursor)  # Compare objects
+
+
+## Example of Output of wtree() method
+
+	def macro():
+		ctx = XSCRIPTCONTEXT.getComponentContext() 
+		smgr = ctx.getServiceManager()
+		tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)
+		tcu.wtree(ctx)
+
+![2018-03-02_195200](https://user-images.githubusercontent.com/6964955/36895712-3c803c38-1e53-11e8-9e85-a7f2f3dc865d.png)
 
 ## Script Examples
 
@@ -105,9 +99,13 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
     - Output the API tree of the document that launched the macro.
 
+## Links to pages with output of TCU
+
+<a href="https://p--q.blogspot.jp/2017/11/libreoffice594.html">LibreOffice5(94)サービスとインターフェース一覧が載っているページの一覧</a>
+
 ## Options
 
-![2017-09-24_002602](https://user-images.githubusercontent.com/6964955/30774573-a9179286-a0bf-11e7-907f-2131c148ceae.png)
+![2018-03-02_194047](https://user-images.githubusercontent.com/6964955/36895375-0827341a-1e52-11e8-87ba-f72d2f98ba11.png)
 
 - **API Reference URL** : Specify the address to <a href="https://api.libreoffice.org/docs/idl/ref/">LibreOffice: Main Page</a>.
 
@@ -148,6 +146,14 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 2017-11-10 version 1.0.2 Fixed a bug.　Output the tree without error when the service that can not acquire a TypeDescription object has no getPropertySetInfo() method.
 
 2018-1-26 version 1.0.3 Fixed a bug. Resolved an issue that wcompare() does not suppress output of services not in IDL.
+
+2018-2-2 version 1.0.5 Fixed a serious bug. Output property not via service.
+
+2018-2-3 version 1.0.6 Added function to correct incorrect IDL(com.sun.star.AccessibleSpreadsheetDocumentView). 
+
+2018-2-8 version 1.0.7 Changed branch of property not via service.
+
+2018-3-2 version 2.0.0 Changed algorithm. Fixed an incorrect output of wcompare() method. Changed default suppression interfaces. Python regular expressions enabled.
 
 ## Tools
 

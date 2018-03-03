@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 import unohelper
 import re, os
-from com.sun.star.beans import PropertyValue
+from com.sun.star.beans import PropertyValue  # Struct
 from com.sun.star.lang import XServiceInfo
 from com.sun.star.awt import XContainerWindowEventHandler
 from pq import XTcu  # 拡張機能で定義したインターフェイスをインポート。
 from .optiondialog import dilaogHandler
-from .trees import createTree
 from .wsgi import Wsgi, createHTMLfile
-from .common import localization
-# from .common import enableRemoteDebugging  # デバッグ用デコレーター
+from .wcompare import wCompare
 IMPLE_NAME = None
 SERVICE_NAME = None
 def create(ctx, *args, imple_name, service_name):
@@ -39,7 +37,6 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 	def getSupportedServiceNames(self):
 		return (SERVICE_NAME,)		
 	# XContainerWindowEventHandler
-# 	@enableRemoteDebugging
 	def callHandlerMethod(self, dialog, eventname, methodname):  # ブーリアンを返す必要あり。dialogはUnoControlDialog。 eventnameは文字列initialize, ok, backのいずれか。methodnameは文字列external_event。
 		if methodname=="external_event":  # Falseのときがありうる?
 			try:
@@ -55,49 +52,26 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		ctx, configurationprovider, css, fns_keys, dummy_offline, dummy_prefix, idlsset = getConfigs(self.consts)
 		outputs = []
 		fns = {key: outputs.append for key in fns_keys}
-		args = ctx, configurationprovider, css, fns, idlsset, outputs, " ", set()
-		createTree(args, obj)
+		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		wCompare(args, obj, None)
 		return outputs
-	def wtree(self, obj):  # ブラウザに出力。
+	def wtree(self, obj):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
-		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
-		args = ctx, configurationprovider, css, fns, idlsset, outputs, "&nbsp;", set()
-		createTree(args, obj)
+		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		wCompare(args, obj, None)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
-# 	@enableRemoteDebugging
 	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
-		_ = localization(configurationprovider)  # 地域化関数に置換。
-		outputs = ['<tt>']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(prefix, fns_keys, outputs)
-		ss_obj1 = set(obj1.getSupportedServiceNames()) if hasattr(obj1, "getSupportedServiceNames") else set()  # obj1のサービス名の集合。
-		ss_obj2 = set(obj2.getSupportedServiceNames()) if hasattr(obj2, "getSupportedServiceNames") else set()  # obj2のサービス名の集合。
-		si_obj1 = set(i.typeName for i in obj1.getTypes()) if hasattr(obj1, "getTypes") else set()  # obj1のインターフェイス名の集合。継承されているインターフェイス名が取得できていない。
-		si_obj2 = set(i.typeName for i in obj2.getTypes()) if hasattr(obj2, "getTypes") else set()  # obj2のインターフェイス名の集合。継承されているインターフェイス名が取得できていない。
-		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
-		st_ncoms = ss_obj1^ss_obj2  # 共通に含まれる以外のサービス。
-		st_ncomi = si_obj1^si_obj2  # 共通に含まれる以外のインターフェイス。
-		st_oms = st_ncoms.copy()  # 共通に含まれるサービス以外のサービスの出力は抑制する。
-		st_omi = st_ncomi.copy() | idlsset  # 共通に含まれるインターフェイス以外とデフォルト出力抑制インターフェイスの出力は抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
-		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
-		st_coms = st_oms - st_ncoms  # 共通に含まれるとしてすでに出力したサービス。
-		st_comi = (st_omi - st_ncomi) | idlsset  # 共通に含まれるとしてすでに出力したインターフェイスとデフォルト出力抑制インターフェイス。
-		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
-		st_oms = ss_obj2 | st_coms # obj2に含まれるサービスと共通に含まれるサービスは抑制する。
-		st_omi = si_obj2 | st_comi # obj2に含まれるインターフェイスと共通に含まれるインターフェイスは抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
-		createTree(args, obj1)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
-		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
-		st_oms = ss_obj1 | st_coms  # obj1に含まれるサービスと共通に含まれるサービスは抑制する。
-		st_omi = si_obj1 | st_comi  # obj1に含まれるインターフェイスと共通に含まれるインターフェイスは抑制する。
-		args = ctx, configurationprovider, css, fns, st_omi, outputs, "&nbsp;", st_oms		
-		createTree(args, obj2)  # 共通に含まれるサービスとインターフェイス一覧を出力する。
+		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		wCompare(args, obj1, obj2)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 def createHtml(ctx, offline, outputs):  # ウェブブラウザに出力。
 	outputs.append("</tt>")		
-	html = "<br>".join(outputs)
+	html = "<br>".join(outputs).replace(" "*2, "&nbsp;"*2).replace(" "*3, "&nbsp;"*3).replace(" "*4, "&nbsp;"*4)  # 連続したスペースはブラウザで一つにされるのでnbspに置換する。一つのスペースを置換するとタグ内まで置換されるのでダメ。
 	title = "TCU - Tree Command for UNO"
 	if offline:  # ローカルリファレンスを使うときはブラウザのセキュリティの制限のためにhtmlファイルを開くようにしないとローカルファイルが開けない。
 		pathsettingssingleton = ctx.getByName('/singletons/com.sun.star.util.thePathSettings')
@@ -139,16 +113,15 @@ def createFns(prefix, fns_keys, outputs):
 		idl = regex.findall(item_with_branch)  # 正規表現でIDL名を抽出する。
 		if idl:
 			lnk = "<a href='{}{}com_1_1sun_1_1star{}.html' target='_blank'>{}</a>".format(prefix, typ, idl[0].replace(".", "_1_1"), idl[0])  # サービス名のアンカータグを作成。
-			outputs.append(item_with_branch.replace(" ", "&nbsp;").replace(idl[0], lnk))  # 半角スペースを置換後にサービス名をアンカータグに置換。
+			outputs.append(item_with_branch.replace(idl[0], lnk)) 
 		else:
-			outputs.append(item_with_branch.replace(" ", "&nbsp;"))  # 半角スペースを置換。	
+			outputs.append(item_with_branch)
 	def _fn(item_with_branch):  # サービス名とインターフェイス名以外を出力するときの関数。
 		idl = set(reg_idl.findall(item_with_branch)) # 正規表現でIDL名を抽出する。
 		inf = reg_i.findall(item_with_branch) # 正規表現でインターフェイス名を抽出する。
 		exc = reg_e.findall(item_with_branch) # 正規表現で例外名を抽出する。
 		idl.difference_update(inf, exc)  # IDL名のうちインターフェイス名と例外名を除く。
 		idl = list(idl)  # 残ったIDL名はすべてStructと考えて処理する。
-		item_with_branch = item_with_branch.replace(" ", "&nbsp;")  # まず半角スペースをHTMLに置換する。
 		for i in inf:  # インターフェイス名があるとき。
 			item_with_branch = _make_anchor("interface", i, item_with_branch)
 		for i in exc:  # 例外名があるとき。
@@ -161,7 +134,7 @@ def createFns(prefix, fns_keys, outputs):
 	def _fn_i(item_with_branch):  # インターフェイス名にアンカータグをつける。
 		_make_link("interface", reg_i, item_with_branch)	
 	def _fn_nolink(item_with_branch):
-		outputs.append(item_with_branch.replace(" ", "&nbsp;"))
+		outputs.append(item_with_branch)
 	fns = {key: _fn for key in fns_keys[2:5]}  # キー PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
 	fns[fns_keys[0]] = _fn_s  # SERVICE		
 	fns[fns_keys[1]] = _fn_i  # INTERFACE

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: optiondialog.py\n"
-"POT-Creation-Date: 2017-10-13 18:13+0900\n"
-"PO-Revision-Date: 2017-10-13 18:18+0900\n"
+"POT-Creation-Date: 2018-03-02 19:13+0900\n"
+"PO-Revision-Date: 2018-03-02 19:15+0900\n"
 "Last-Translator: p--q <pq.blogspot@gmail.com>\n"
 "Language-Team: p--q <pq.blogspot@gmail.com>\n"
 "Language: Japanese\n"
@@ -16,66 +16,73 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: ../../..\n"
 
-#: ../../../trees.py:29
-msgid "Can not get TypeDescription object of {}."
-msgstr "{}のTypeDescriptionが取得できません。"
+#: ../../../optiondialog.py:20
+msgid "TCU - Tree Command for UNO"
+msgstr "TCU - UNOのツリーコマンド"
 
-#: ../../../trees.py:39
+#: ../../../optiondialog.py:21
+msgid "API Reference URL: https://"
+msgstr " APIリファレンスURL: https://"
+
+#: ../../../optiondialog.py:23
+msgid "Jump to this URL"
+msgstr "このURLへ飛ぶ"
+
+#: ../../../optiondialog.py:25
+msgid "~Use Local Reference"
+msgstr "ローカルリファレンスを使う(~U)"
+
+#: ../../../optiondialog.py:26
+msgid "Local Reference Path:"
+msgstr "ローカルリファレンスへのパス:"
+
+#: ../../../optiondialog.py:28
+msgid "~Browse"
+msgstr "検索(~B)"
+
+#: ../../../optiondialog.py:29
+msgid "Ignored Interfaces (Python regex patterns can be used, excluding dots):"
+msgstr ""
+"無視するインターフェイス(Pythonの正規表現使用可能、但しドットのみは除く)"
+
+#: ../../../optiondialog.py:31
+msgid "~Restore Defaults"
+msgstr "デフォルトに戻す(~R)"
+
+#: ../../../optiondialog.py:82
+msgid "Select ref folder"
+msgstr "refフォルダを選択する"
+
+#: ../../../wcompare.py:30
+msgid "Services and interface common to object1 and object2."
+msgstr "object1とobject2に共通するサービスとインターフェイス一覧"
+
+#: ../../../wcompare.py:38
+msgid "Services and interfaces that only object1 has."
+msgstr "object1だけがもつサービスとインターフェイス一覧"
+
+#: ../../../wcompare.py:46
+msgid "Services and interfaces that only object2 has."
+msgstr "object2だけがもつサービスとインターフェイス一覧"
+
+#: ../../../wcompare.py:69
 msgid ""
 "{} is not a service name or an interface name, so it is not supported yet."
 msgstr "{}はサービス名またはインターフェイス名ではないので未対応です。"
 
-#: ../../../trees.py:73
+#: ../../../wcompare.py:95
 msgid "There is no service or interface to support."
 msgstr "サポートするサービスやインターフェイスがありません。"
 
-#: ../../../optiondialog.py:21
-msgid "TCU - Tree Command for UNO"
-msgstr "TCU - UNOのツリーコマンド"
+#: ../../../wcompare.py:188
+msgid "There is no service or interface."
+msgstr "サービスやインターフェイスはありません。"
 
-#: ../../../optiondialog.py:22
-msgid "API Reference URL: https://"
-msgstr " APIリファレンスURL: https://"
+#~ msgid "Can not get TypeDescription object of {}."
+#~ msgstr "{}のTypeDescriptionが取得できません。"
 
-#: ../../../optiondialog.py:24
-msgid "Jump to this URL"
-msgstr "このURLへ飛ぶ"
-
-#: ../../../optiondialog.py:26
-msgid "~Use Local Reference"
-msgstr "ローカルリファレンスを使う(~U)"
-
-#: ../../../optiondialog.py:27
-msgid "Local Reference Path:"
-msgstr "ローカルリファレンスへのパス:"
-
-#: ../../../optiondialog.py:29
-msgid "~Browse"
-msgstr "検索(~B)"
-
-#: ../../../optiondialog.py:30
-msgid "Ignored Interfaces:"
-msgstr "無視するインターフェイス:"
-
-#: ../../../optiondialog.py:32
-msgid "~Restore Defaults"
-msgstr "デフォルトに戻す(~R)"
-
-#: ../../../optiondialog.py:84
-msgid "Select ref folder"
-msgstr "refフォルダを選択する"
-
-#: ../../../component.py:78
-msgid "Services and interface common to object1 and object2."
-msgstr "object1とobject2に共通するサービスとインターフェイス一覧"
-
-#: ../../../component.py:83
-msgid "Services and interfaces that only object1 has."
-msgstr "object1だけがもつサービスとインターフェイス一覧"
-
-#: ../../../component.py:88
-msgid "Services and interfaces that only object2 has."
-msgstr "object2だけがもつサービスとインターフェイス一覧"
+#~ msgid "Ignored Interfaces:"
+#~ msgstr "無視するインターフェイス:"
 
 #~ msgid "{} is not an IDL name."
 #~ msgstr "{}はIDL名ではありません。"
