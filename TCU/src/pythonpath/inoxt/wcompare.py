@@ -80,9 +80,10 @@ def getAttrbs(args, obj):
 				typenames = [i.typeName for i in types]  #  # types型をインターフェイス名のリストに変換。
 				st_is.update(typenames)
 				getSuperInterface(st_is, [tdm.getByHierarchicalName(i) for i in typenames]) 
-		if hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。サービスに属さないプロパティを出力。
-			properties = obj.getPropertySetInfo().getProperties()  # オブジェクトのプロパティを取得。すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
-			st_ps.update(properties)
+		if hasattr(obj, "getProperties"):	# objにgetPropertiesがあるとき。
+			st_ps.update(obj.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。		
+		elif hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。getProperties()とgetPropertySetInfo()どちらかか両方あるオブジェクトがあるがその違いは不明。
+			st_ps.update(obj.getPropertySetInfo().getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
 		if not any([st_ss, st_nontdm, st_is, st_ps]):
 			outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
 	return st_ss, st_nontdm, st_is, st_ps  # プロパティのみProperty Structを返す。
