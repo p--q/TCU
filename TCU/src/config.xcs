@@ -1,43 +1,31 @@
 <?xml version='1.0' encoding='utf-8'?>
-<oor:component-schema
-	oor:name="ExtensionData"
-	oor:package="pq.Tcu"
-	xml:lang="en-US"
-	xmlns:oor="http://openoffice.org/2001/registry"
-	xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<oor:component-schema oor:name="ExtensionData"
+	oor:package="pq.Tcu" xml:lang="en-US" xmlns:oor="http://openoffice.org/2001/registry"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<templates>
 		<group oor:name="nodetypes">
 			<info>
 				<desc>Do you use local SDK reference?</desc>
 			</info>
-			<prop
-				oor:name="OffLine"
-				oor:type="xs:boolean">
+			<prop oor:name="OffLine" oor:type="xs:boolean">
 				<value>false</value>
 			</prop>
 			<info>
 				<desc>URL to online API reference</desc>
 			</info>
-			<prop
-				oor:name="RefURL"
-				oor:type="xs:string">
+			<prop oor:name="RefURL" oor:type="xs:string">
 				<value>api.libreoffice.org/docs/idl/ref/</value>
 			</prop>
 			<info>
 				<desc>Fileurl to offline API reference</desc>
 			</info>
-			<prop
-				oor:name="RefDir"
-				oor:type="xs:string">
+			<prop oor:name="RefDir" oor:type="xs:string">
 				<value>$(inst)/sdk/docs/idl/ref/</value>
 			</prop>
 			<info>
 				<desc>Save IgnoredIDLs as text. 'com.sun.star' is omitted.</desc>
 			</info>
-			<prop
-				oor:name="IgnoredIDLs"
-				oor:type="xs:string">
+			<prop oor:name="IgnoredIDLs" oor:type="xs:string">
 				<value>.uno.XInterface,.lang.XTypeProvider,.lang.XServiceInfo,.uno.XWeak,.lang.XMain,.uno.XAggregation,.lang.XUnoTunnel,X\w*Listener
 				</value>
 			</prop>
@@ -50,15 +38,11 @@
 					<desc>These nodes should not be rewritten with
 						ConfigurationProvider for default.</desc>
 				</info>
-				<node-ref
-					oor:name="Defaults"
-					oor:node-type="nodetypes" />
+				<node-ref oor:name="Defaults" oor:node-type="nodetypes" />
 				<info>
 					<desc>Rewrite these nodes with ConfigurationProvider.</desc>
 				</info>
-				<node-ref
-					oor:name="OptionDialog"
-					oor:node-type="nodetypes" />
+				<node-ref oor:name="OptionDialog" oor:node-type="nodetypes" />
 			</group>
 		</group>
 	</component>
