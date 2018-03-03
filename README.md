@@ -157,7 +157,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-3-2 version 2.0.1 Stop comparing by property names in wcompare() method.
 
-2018-3-3 version 2.0.2 The property name and the attribute name are prevented from overlapping.
+2018-3-3 version 2.0.2 The property name and the attribute name are prevented from overlapping. Fixed a serious bug. 
 
 ## Tools
 
