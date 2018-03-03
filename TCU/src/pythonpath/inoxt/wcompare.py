@@ -20,7 +20,7 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 	if obj2 is None:  # obj2がないときは比較しない。
 		treeCreator(tdm, css, fns, outputs, st_omi)(ss_obj1, nontdm_obj1, is_obj1, ps_obj1)  # obj1のサービスとインターフェイスのみ出力する。			
 	else:  # obj2があるときはobj1と比較する。	
-		ss_obj2, nontdm_obj2, is_obj2, dummy_ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct、の集合。
+		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct、の集合。
 		is_obj2.difference_update(st_omi)  # 出力しないインターフェイス名を除いておく。
 		[st_omi.update(filter(lambda x: re.search(p, x), is_obj2)) for p in patterns]  # オブジェックトのインターフェイス名の集合から正規表現のパターンに一致する名前をst_omiに追加する。
 		createTree = treeCreator(tdm, css, fns, outputs, st_omi)  # createTreeを取得。
@@ -29,19 +29,19 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 		st_s = ss_obj1 & ss_obj2  # 共通するサービス名。
 		st_non = nontdm_obj1 & nontdm_obj2  # 共通するnontdmサービス名。
 		st_i = is_obj1 & is_obj2  # 共通するインターフェイス名。
-		omis = createTree(st_s, st_non, st_i, set())  # 共通するサービスとインターフェイスを出力する。出力したサービス名、インターフェイス名、プロパティ名が返る。
+		omis = createTree(st_s, st_non, st_i, set())  # 共通するサービスとインターフェイスを出力する。出力したサービス名、インターフェイス名、プロパティ名が返る。共通するプロパティ名は渡さない。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
 		st_s = ss_obj1 - ss_obj2
 		st_non = nontdm_obj1 - nontdm_obj2
 		st_i = is_obj1 - is_obj2
-		omis = createTree(st_s, st_non, st_i, set(), omis=omis)  # obj1のみのサービスとインターフェイスを出力する。すでに出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。
+		createTree(st_s, st_non, st_i, ps_obj1, omis=[i.copy() for i in omis])  # obj1のみのサービスとインターフェイスを出力する。共通に出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
 		st_s = ss_obj2 - ss_obj1
 		st_non = nontdm_obj2 - nontdm_obj1
 		st_i = is_obj2 - is_obj1
-		createTree(st_s, st_non, st_i, set(), omis=omis)  # obj2のみのサービスとインターフェイスを出力する。	すでに出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。	
+		createTree(st_s, st_non, st_i, ps_obj2, omis=omis)  # obj2のみのサービスとインターフェイスを出力する。	共通に出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。	
 def getAttrbs(args, obj):
 	outputs, tdm, css = args
 	st_ss, st_nontdm, st_is, st_ps = [set() for i in range(4)]  # サービス名、TypeDescriptionオブジェクトを取得できないサービス名、インターフェイス名を入れる集合、プロパティのみProperty Structを返す。
@@ -240,13 +240,18 @@ def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):
 						lst_itd.extend(j.getOptionalBaseTypes())  # スーパークラスのインターフェイスを取得。
 						if lst_itd:  # インターフェイスのスーパークラスがあるとき。(要素はTypeDescriptionオブジェクト)
 							_stack_interface(lst_itd)  # スタックに追加。
-						t_md = j.getMembers()  # インターフェイスアトリビュートとメソッドのTypeDescriptionオブジェクトを取得。
-						if t_md:  # インターフェイスアトリビュートとメソッドがあるとき。
+						t_md = j.getMembers()  # アトリビュートとメソッドのTypeDescriptionオブジェクトを取得。
+						if t_md:  # アトリビュートとメソッドがあるとき。
 							stack.extend(sorted(t_md, key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。
 							lst_level.extend([level+1 for i in t_md])  # 枝分かれ番号1増やして設定。
-							stringlengths = [len(i.ReturnType.Name.replace(css, "")) for i in t_md if i.getTypeClass()==INTERFACE_METHOD]  # メソッド名の長さのリスト。
-							stringlengths.extend([len(i.Type.Name.replace(css, "")) for i in t_md if i.getTypeClass()==INTERFACE_ATTRIBUTE])  # アトリビュート名の長さのリストを追加。
-							m = max(stringlengths)  # インターフェイスアトリビュートとメソッドの型のうち最大文字数を取得。
+							stringlengths = set()  # 文字列の長さを入れる集合。
+							for i in t_md:
+								if i.getTypeClass()==INTERFACE_METHOD:  # メソッド名のとき。
+									stringlengths.add(len(i.ReturnType.Name.replace(css, "")))  # 戻り値の型の文字列の長さを取得。
+								elif i.getTypeClass()==INTERFACE_ATTRIBUTE:  # アトリビュート名のとき。  
+									stringlengths.add(len(i.Type.Name.replace(css, "")))  # アトリビュートの型の文字列の長さを取得。
+									st_omp.add(i.MemberName) # アトリビュート名をすでに出力したプロパティ名の集合に追加。サービスを介さないプロパティ名にアトリビュートに出てくるので。
+							m = max(stringlengths)  # アトリビュートとメソッドの型のうち最大文字数を取得。
 					elif typcls==SERVICE:  # jがサービスのときXServiceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト。
 						branch.append(j.Name.replace(css, ""))  # サービス名をbranchのインデックス2の要素に追加。
 						fns["SERVICE"]("".join(branch))  # サービス名の行を出力。
