@@ -50,12 +50,12 @@ def getAttrbs(args, obj):
 		if tdm.hasByHierarchicalName(idl):  #  TypeDescriptionが取得できるとき。
 			j = tdm.getByHierarchicalName(idl)  # IDL名からTypeDescriptionオブジェクトを取得。
 			typcls = j.getTypeClass()  # jのタイプクラスを取得。
-			if typcls == SERVICE:  # サービスの時
-				st_ss.add(j.Name)
+			if typcls == SERVICE:  # サービスの時		
+				st_ss.add(j.Name)  # すでにスーパークラスを取得したサービス名を取得する。
 				args = st_ss, st_is, [j]
 				getSuperService(args)
 			elif typcls == INTERFACE:  # インターフェイスの時
-				st_is.add(j.Name)
+				st_is.add(j.Name)  # すでにスーパークラスを取得したインターフェイス名を取得する。
 				getSuperInterface(st_is, [j])	
 			else:  # サービスかインターフェイス以外のときは未対応。
 				outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.".format(idl)))  # はサービス名またはインターフェイス名ではないので未対応です。
@@ -89,34 +89,28 @@ def getAttrbs(args, obj):
 def getSuperService(args):  # 再帰的にサービスのスーパークラスとインターフェイス名を取得する。XServiceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト
 	st_ss, st_is, tdms = args
 	for j in tdms:  # 各サービスのTypeDescriptionオブジェクトについて。
-		if j.Name in st_ss:  # すでに追加したサービス名のときは次のループにいく。
-			continue
-		else:
-			lst_itd = []  # サービスがもっているインターフェイスを入れるリストを初期化。
-			if j.isSingleInterfaceBased():  # new-styleサービスのとき。
-				lst_itd.append(j.getInterface())  # new-styleサービスのインターフェイスを取得。TypeDescriptionオブジェクト。
-			else:  # old-styleサービスのときはスーパークラスのサービスがありうる。
-				lst_std = list(j.getMandatoryServices())
-				lst_std.extend(j.getOptionalServices())
-				if lst_std:
-					st_ss.update(i.Name for i in lst_std)  # スーパークラスのサービス名を取得。
-					args = st_ss, st_is, lst_std
-					getSuperService(args)  # サービスのスーパークラスについて。 
-				lst_itd.extend(j.getMandatoryInterfaces())  # old-styleサービスのインターフェイスを取得。
-				lst_itd.extend(j.getOptionalInterfaces())  # old-styleサービスのインターフェイスを取得。			
-			if lst_itd:  # スーパークラスのインターフェイスがあるとき。
-				st_is.update(i.Name for i in lst_itd)  # スーパークラスのインターフェイス名を取得。
-				getSuperInterface(st_is, lst_itd)  # インターフェイスのスーパークラスについて。	
+		lst_itd = []  # サービスがもっているインターフェイスを入れるリストを初期化。
+		if j.isSingleInterfaceBased():  # new-styleサービスのとき。
+			lst_itd.append(j.getInterface())  # new-styleサービスのインターフェイスを取得。TypeDescriptionオブジェクト。
+		else:  # old-styleサービスのときはスーパークラスのサービスがありうる。
+			lst_std = list(j.getMandatoryServices())
+			lst_std.extend(j.getOptionalServices())
+			if lst_std:
+				st_ss.update(i.Name for i in lst_std)  # スーパークラスのサービス名を取得。
+				args = st_ss, st_is, lst_std
+				getSuperService(args)  # サービスのスーパークラスについて。 
+			lst_itd.extend(j.getMandatoryInterfaces())  # old-styleサービスのインターフェイスを取得。
+			lst_itd.extend(j.getOptionalInterfaces())  # old-styleサービスのインターフェイスを取得。			
+		if lst_itd:  # スーパークラスのインターフェイスがあるとき。
+			st_is.update(i.Name for i in lst_itd)  # スーパークラスのインターフェイス名を取得。	
+			getSuperInterface(st_is, lst_itd)  # インターフェイスのスーパークラスについて。
 def getSuperInterface(st_is, tdms):  # 再帰的にインターフェイスのスーパークラスを取得する。XInterfaceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト。
 	for j in tdms:
-		if j.Name in st_is:  # すでに追加したインターフェイス名のときは次のループにいく。
-			continue
-		else:
-			lst_itd = list(j.getBaseTypes())
-			lst_itd.extend(j.getOptionalBaseTypes())
-			if lst_itd:  # スーパークラスのインターフェイスがあるとき。
-				st_is.update(i.Name for i in lst_itd)  # スーパークラスのインターフェイス名を取得。
-				getSuperInterface(st_is, lst_itd)
+		lst_itd = list(j.getBaseTypes())
+		lst_itd.extend(j.getOptionalBaseTypes())
+		if lst_itd:  # スーパークラスのインターフェイスがあるとき。
+			st_is.update(i.Name for i in lst_itd)  # スーパークラスのインターフェイス名を取得。
+			getSuperInterface(st_is, lst_itd)
 def treeCreator(tdm, css, fns, outputs, omi):				
 	def createTree(st_s, st_non, st_i, st_p, *, omis=None):  # st_pの要素はプロパティ名ではなくProperty Struct。omisは出力を抑制する名前のタプルのタプル。
 		if omis is None:
@@ -137,6 +131,7 @@ def treeCreator(tdm, css, fns, outputs, omi):
 				if non_si:  # インターフェイスがあるとき。
 					stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 					st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
+	
 			consumeStack(stack)  # ツリーを出力。
 			st_s.difference_update(st_oms)  # すでに出力されたサービス名を除く。比較のときは出力抑制されたスーパークラスのサービス名がでてくる。
 			if st_s:  # まだ出力されていないサービスが残っているとき。
