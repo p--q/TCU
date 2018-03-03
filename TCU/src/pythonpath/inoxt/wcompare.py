@@ -137,7 +137,6 @@ def treeCreator(tdm, css, fns, outputs, omi):
 				if non_si:  # インターフェイスがあるとき。
 					stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 					st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
-	
 			consumeStack(stack)  # ツリーを出力。
 			st_s.difference_update(st_oms)  # すでに出力されたサービス名を除く。比較のときは出力抑制されたスーパークラスのサービス名がでてくる。
 			if st_s:  # まだ出力されていないサービスが残っているとき。

@@ -6,8 +6,8 @@ def macro():
 	smgr = ctx.getServiceManager()  # サービスマネージャーの取得。 
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  # サービス名か実装名でインスタンス化。
 	doc = XSCRIPTCONTEXT.getDocument()
- 	controller = doc.getCurrentController()  # コントローラの取得。 
- 	sheet = controller.getActiveSheet()  # アクティブなシートを取得。
+	controller = doc.getCurrentController()  # コントローラの取得。 
+	sheet = controller.getActiveSheet()  # アクティブなシートを取得。
 	tcu.wtree(sheet)
 g_exportedScripts = macro, #マクロセレクターに限定表示させる関数をタプルで指定。
 if __name__ == "__main__":  # オートメーションで実行するとき
