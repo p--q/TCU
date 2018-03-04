@@ -22,7 +22,7 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 		omis = treeCreator(indent, tdm, css, fns, outputs, st_omi)(ss_obj1, nontdm_obj1, is_obj1, ps_obj1)  # obj1のサービスとインターフェイスのみ出力する。	
 		rnames1 = set(i.Name for i in ps_obj1) - omis[-1]  # まだ出力されていないobj1のプロパティ名の集合を取得。
 		if rnames1:  # まだ出力されていないプロパティ名があるとき。
-			fns["NOLINK"]("└──")  # 枝の最後なので下に枝を出さない。
+			fns["NOLINK"](_("└──(Properties belonging to the unknown service or interface)"))  # 枝の最後なので下に枝を出さない。
 			[fns["PROPERTY"](b) for b in getPBranches(css, indent*2, ps_obj1, rnames1)]  # プロパティの行を出力。	
 		else:
 			removeBranch(indent, outputs)  # 余剰な縦枝を刈る。		
@@ -51,10 +51,6 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 		st_non = nontdm_obj2 - nontdm_obj1
 		st_i = is_obj2 - is_obj1
 		omis2 = createTree(st_s, st_non, st_i, ps_obj2, omis=omis)  # obj2のみのサービスとインターフェイスを出力する。	共通に出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。	
-		
-# 		import pydevd; pydevd.settrace(stdoutToServer=True, stderrToServer=True)
-		
-		
 		pnames1 = omis[-1] | omis1[-1]  # すでに出力されたobj1のプロパティ名の集合。
 		pnames2 = omis[-1] | omis2[-1]  # すでに出力されたobj2のプロパティ名の集合。
 		rnames1 = set(i.Name for i in ps_obj1) - pnames1  # まだ出力されていないobj1のプロパティ名の集合を取得。
@@ -62,26 +58,27 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 		names0 = rnames1 & rnames2  # まだ出力されていないプロパティ名で共通したもの。
 		names1 = rnames1 - names0  # まだ出力されていないプロパティ名でobj1のもの。
 		names2 = rnames2 - names0  # まだ出力されていないプロパティ名でobj2のもの。
+		names11 = names1 - omis2[-1]  # obj1のみのサービスを介さないプロパティのうちobj2のサービスのプロパティとして出力されているもの以外。
+		names12 = names1 & omis2[-1]  # obj1のみのサービスを介さないプロパティのうちobj2のサービスのプロパティとして出力されているもの。
+		names21 = names2 - omis1[-1]  # obj2のみのサービスを介さないプロパティのうちobj1のサービスのプロパティとして出力されているもの以外。
+		names22 = names2 & omis1[-1]  # obj2のみのサービスを介さないプロパティのうちobj1のサービスのプロパティとして出力されているもの。
 		stash2 = outputs[q:]  # obj2のみの部分の行を取得。
 		del outputs[q:]  # stash2で取得した部分の行を削除。	
-		finalizeBlock(indent, outputs, fns, css, ps_obj1, names1)  # obj1のみの部分の最終処理。
+		finalizeBlock(indent, outputs, fns, css, ps_obj1, names11, names12)  # obj1のみの部分の最終処理。
 		stash1 = outputs[p:]  # obj1のみの部分の行を取得。
 		del outputs[p:]  # stash1で取得した部分の行を削除。		
 		finalizeBlock(indent, outputs, fns, css, ps_obj1, names0)  # 共通の部分の最終処理。 
 		outputs.extend(stash1)  # obj1のみの部分の行を再結合。
 		outputs.extend(stash2)  # obj2のみの部分の行を再結合。
-		finalizeBlock(indent, outputs, fns, css, ps_obj2, names2)  # obj2のみの部分の最終処理。
-		
-		
-		サービスやインターフェイスがないときは縦枝削りをしないようにしないといけない。それか"├─"を入れるか。
-		
-# 		if not any([st_ss, st_nontdm, st_is, st_ps]):
-# 			outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
-
-def finalizeBlock(indent, outputs, fns, css, ps, names):  # ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。		
-	if names:  # プロパティ名が残っているとき。
-		fns["NOLINK"]("└──")  # 枝の最後なので下に枝を出さない。
-		[fns["PROPERTY"](b) for b in getPBranches(css, indent*2, ps, names)] # プロパティの行を出力。	
+		finalizeBlock(indent, outputs, fns, css, ps_obj2, names21, names22)  # obj2のみの部分の最終処理。
+def finalizeBlock(indent, outputs, fns, css, ps, ns1, ns2=None):  # ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。		
+	if ns1 or ns2:  # プロパティ名が残っているとき。
+		s = indent * 4
+		fns["NOLINK"](_("└──(Properties belonging to the unknown service or interface)"))  # 枝の最後なので下に枝を出さない。
+		[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns1)] # プロパティの行を出力。	
+		if ns2:
+			fns["NOLINK"](_("{}(Properties belonging to the service or interface in the counterpart)").format(indent*2))
+			[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns2)] # プロパティの行を出力。	
 	else:
 		removeBranch(indent, outputs)  # 余剰な縦枝を刈る。				
 def getPBranches(css, s, ps, names):  # s: 余白。ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。
@@ -90,13 +87,20 @@ def getPBranches(css, s, ps, names):  # s: 余白。ps: Property Structのイテ
 	return ["{}{}  {}".format(s, i.Type.typeName.replace(css, "").rjust(m), i.Name) for i in props]	
 def removeBranch(indent, outputs):  # 余剰な縦枝を刈る。
 	n = len(outputs)  # 出力行数を取得。
+	flg = True
 	for j in reversed(range(n)):  # 出力行を下からみていく。
 		line = outputs[j]  # 行の内容を取得。
 		if "│   " in line:  # 下に続く縦棒があるとき
 			outputs[j] = line.replace("│   ", indent, 1)  # j行目のline内の左端の不要な縦棒を空白に置換。
+			flg = False
 		elif "├─" in line:  # 下に続く分岐があるとき。
 			outputs[j] = line.replace("├─", "└─", 1)  # 分岐を終了枝に置換してループを出る。
+			flg = False
 			break	
+		else:  # 縦枝も横にでる分岐もないときはループを出る。
+			break
+	if flg:
+		outputs.append(_("{}There is no service or interface.").format(indent))  # サービスやインターフェイスがありません。	
 def getAttrbs(args, obj):
 	outputs, tdm, css = args
 	st_ss, st_nontdm, st_is, st_ps = [set() for i in range(4)]  # サービス名、TypeDescriptionオブジェクトを取得できないサービス名、インターフェイス名を入れる集合、プロパティのみProperty Structを返す。
@@ -113,7 +117,7 @@ def getAttrbs(args, obj):
 				st_is.add(j.Name)  # すでにスーパークラスを取得したインターフェイス名を取得する。
 				getSuperInterface(st_is, [j])	
 			else:  # サービスかインターフェイス以外のときは未対応。
-				outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.".format(idl)))  # はサービス名またはインターフェイス名ではないので未対応です。
+				outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.").format(idl))  # はサービス名またはインターフェイス名ではないので未対応です。
 		else:  # TypeDescriptionを取得できないIDL名のとき
 			st_nontdm.add(idl)  # TypeDescriptionオブジェクトを取得できないサービスの集合に追加。		
 	else:  # objが文字列以外の時
@@ -207,26 +211,6 @@ def treeCreator(indent, tdm, css, fns, outputs, omi):
 					branch = ["├─"] 
 					branch.append(i.replace(css, ""))  # 一番最後のサービス名をbranchの要素に追加。
 					fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。	
-# 			properties = [i for i in st_p if not i.Name in st_omp]  # すでに出力されたプロパティを除く。Property Structのリストが返る。		
-# 			if properties:  # まだ出力していないプロパティが存在する時。
-# 				props = sorted(properties, key=lambda x: x.Name)  #Name属性で昇順に並べる。
-# 				m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
-# 				fns["NOLINK"]("└──")  # 枝の最後なので下に枝を出さない。
-# 				for i in props:  # 各プロパティについて。
-# 					branch = [indent*2]  # 枝をリセット。
-# 					branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
-# 					fns["PROPERTY"]("".join(branch))  # プロパティの行を出力。	
-# 			else:			
-# 				n = len(outputs)  # 出力行数を取得。
-# 				for j in reversed(range(n)):  # 出力行を下からみていく。
-# 					line = outputs[j]  # 行の内容を取得。
-# 					if "│   " in line:  # 下に続く縦棒があるとき
-# 						outputs[j] = line.replace("│   ", indent, 1)  # j行目のline内の左端の不要な縦棒を空白に置換。
-# 					elif "├─" in line:  # 下に続く分岐があるとき。
-# 						outputs[j] = line.replace("├─", "└─", 1)  # 分岐を終了枝に置換してループを出る。
-# 						break	
-# 		else:  # wcompare()のときは出力するものがないときがありうる。
-# 			outputs.append(_("There is no service or interface."))  # サービスやインターフェイスがありません。		
 		return st_oms, st_omi-omi, st_omp  # 出力したサービス名、インターフェイス名、プロパティ名を返す。
 	return createTree			
 def selectNonSupers(tdm, st, getSupers):  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
