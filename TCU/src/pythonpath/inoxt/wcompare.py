@@ -9,6 +9,7 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
 	global _  # グローバルな_を置換する。
 	_ = localization(configurationprovider)  # 地域化関数に置換。
+	indent = "	  "  # インデントを設定。
 	reg_p = re.compile(r'[^_a-zA-Z0-9\.]')  # アンダースコア、ドット、数字、文字以外のものを含んでいるものは正規表現パターンと判断する。
 	patterns = set(i for i in st_omi if reg_p.search(i))  # 正規表現のパターンになっている要素のみをst_omiから集合に取得。
 	st_omi.difference_update(patterns)  # st_omiから正規表現のパターンを除く。
@@ -18,30 +19,90 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 	[st_omi.update(filter(lambda x: re.search(p, x), is_obj1)) for p in patterns]  # オブジェックトのインターフェイス名の集合から正規表現のパターンに一致する名前をst_omiに追加する。
 	is_obj1.difference_update(st_omi)  # 正規表現で取得した出力しないインターフェイス名を除いておく。
 	if obj2 is None:  # obj2がないときは比較しない。
-		treeCreator(tdm, css, fns, outputs, st_omi)(ss_obj1, nontdm_obj1, is_obj1, ps_obj1)  # obj1のサービスとインターフェイスのみ出力する。			
+		omis = treeCreator(indent, tdm, css, fns, outputs, st_omi)(ss_obj1, nontdm_obj1, is_obj1, ps_obj1)  # obj1のサービスとインターフェイスのみ出力する。	
+		rnames1 = set(i.Name for i in ps_obj1) - omis[-1]  # まだ出力されていないobj1のプロパティ名の集合を取得。
+		if rnames1:  # まだ出力されていないプロパティ名があるとき。
+			fns["NOLINK"](_("└──(Properties belonging to the unknown service or interface)"))  # 枝の最後なので下に枝を出さない。
+			[fns["PROPERTY"](b) for b in getPBranches(css, indent*2, ps_obj1, rnames1)]  # プロパティの行を出力。	
+		else:
+			removeBranch(indent, outputs)  # 余剰な縦枝を刈る。		
 	else:  # obj2があるときはobj1と比較する。	
 		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct、の集合。
 		is_obj2.difference_update(st_omi)  # 出力しないインターフェイス名を除いておく。
 		[st_omi.update(filter(lambda x: re.search(p, x), is_obj2)) for p in patterns]  # オブジェックトのインターフェイス名の集合から正規表現のパターンに一致する名前をst_omiに追加する。
-		createTree = treeCreator(tdm, css, fns, outputs, st_omi)  # createTreeを取得。
+		createTree = treeCreator(indent, tdm, css, fns, outputs, st_omi)  # createTreeを取得。
 		is_obj2.difference_update(st_omi)  # 正規表現で取得した出力しないインターフェイス名を除いておく。
 		outputs.append(_("Services and interface common to object1 and object2."))  # object1とobject2に共通するサービスとイターフェイス一覧。
 		st_s = ss_obj1 & ss_obj2  # 共通するサービス名。
 		st_non = nontdm_obj1 & nontdm_obj2  # 共通するnontdmサービス名。
 		st_i = is_obj1 & is_obj2  # 共通するインターフェイス名。
 		omis = createTree(st_s, st_non, st_i, set())  # 共通するサービスとインターフェイスを出力する。出力したサービス名、インターフェイス名、プロパティ名が返る。共通するプロパティ名は渡さない。
+		p = len(outputs)  # 共通するものが入っているところまでの行数を取得。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object1 has."))  # object1だけがもつサービスとインターフェイス一覧。
 		st_s = ss_obj1 - ss_obj2
 		st_non = nontdm_obj1 - nontdm_obj2
 		st_i = is_obj1 - is_obj2
-		createTree(st_s, st_non, st_i, ps_obj1, omis=[i.copy() for i in omis])  # obj1のみのサービスとインターフェイスを出力する。共通に出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。
+		omis1 = createTree(st_s, st_non, st_i, ps_obj1, omis=[i.copy() for i in omis])  # obj1のみのサービスとインターフェイスを出力する。共通に出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。
+		q = len(outputs)  # obj1だけのものが入っているところまでの行数を取得。
 		outputs.append("")	
 		outputs.append(_("Services and interfaces that only object2 has."))  # object2だけがもつサービスとインターフェイス一覧。
 		st_s = ss_obj2 - ss_obj1
 		st_non = nontdm_obj2 - nontdm_obj1
 		st_i = is_obj2 - is_obj1
-		createTree(st_s, st_non, st_i, ps_obj2, omis=omis)  # obj2のみのサービスとインターフェイスを出力する。	共通に出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。	
+		omis2 = createTree(st_s, st_non, st_i, ps_obj2, omis=omis)  # obj2のみのサービスとインターフェイスを出力する。	共通に出力したサービス名、インターフェイス名、プロパティ名を渡して抑制する。	
+		pnames1 = omis[-1] | omis1[-1]  # すでに出力されたobj1のプロパティ名の集合。
+		pnames2 = omis[-1] | omis2[-1]  # すでに出力されたobj2のプロパティ名の集合。
+		rnames1 = set(i.Name for i in ps_obj1) - pnames1  # まだ出力されていないobj1のプロパティ名の集合を取得。
+		rnames2 = set(i.Name for i in ps_obj2) - pnames2  # まだ出力されていないobj2のプロパティ名の集合を取得。
+		names0 = rnames1 & rnames2  # まだ出力されていないプロパティ名で共通したもの。
+		names1 = rnames1 - names0  # まだ出力されていないプロパティ名でobj1のもの。
+		names2 = rnames2 - names0  # まだ出力されていないプロパティ名でobj2のもの。
+		names11 = names1 - omis2[-1]  # obj1のみのサービスを介さないプロパティのうちobj2のサービスのプロパティとして出力されているもの以外。
+		names12 = names1 & omis2[-1]  # obj1のみのサービスを介さないプロパティのうちobj2のサービスのプロパティとして出力されているもの。
+		names21 = names2 - omis1[-1]  # obj2のみのサービスを介さないプロパティのうちobj1のサービスのプロパティとして出力されているもの以外。
+		names22 = names2 & omis1[-1]  # obj2のみのサービスを介さないプロパティのうちobj1のサービスのプロパティとして出力されているもの。
+		stash2 = outputs[q:]  # obj2のみの部分の行を取得。
+		del outputs[q:]  # stash2で取得した部分の行を削除。	
+		finalizeBlock(indent, outputs, fns, css, ps_obj1, names11, names12)  # obj1のみの部分の最終処理。
+		stash1 = outputs[p:]  # obj1のみの部分の行を取得。
+		del outputs[p:]  # stash1で取得した部分の行を削除。		
+		finalizeBlock(indent, outputs, fns, css, ps_obj1, names0)  # 共通の部分の最終処理。 
+		outputs.extend(stash1)  # obj1のみの部分の行を再結合。
+		outputs.extend(stash2)  # obj2のみの部分の行を再結合。
+		finalizeBlock(indent, outputs, fns, css, ps_obj2, names21, names22)  # obj2のみの部分の最終処理。
+def finalizeBlock(indent, outputs, fns, css, ps, ns1, ns2=None):  # ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。		
+	if ns1 or ns2:  # プロパティ名が残っているとき。
+		s = indent * 4
+		if ns1:
+			fns["NOLINK"](_("└──(Properties belonging to the unknown service or interface)"))  # 枝の最後なので下に枝を出さない。
+			[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns1)] # プロパティの行を出力。	
+		if ns2:
+			h = indent*2 if ns1 else "└──"
+			fns["NOLINK"](_("{}(Properties belonging to the service or interface in the counterpart)").format(h))
+			[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns2)] # プロパティの行を出力。	
+	else:
+		removeBranch(indent, outputs)  # 余剰な縦枝を刈る。				
+def getPBranches(css, s, ps, names):  # s: 余白。ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。
+	props = [i for i in sorted(ps, key=lambda x: x.Name) if i.Name in names]  # Name属性で昇順に並べかえたProperty Structのリストを取得。
+	m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。	
+	return ["{}{}  {}".format(s, i.Type.typeName.replace(css, "").rjust(m), i.Name) for i in props]	
+def removeBranch(indent, outputs):  # 余剰な縦枝を刈る。
+	n = len(outputs)  # 出力行数を取得。
+	flg = True
+	for j in reversed(range(n)):  # 出力行を下からみていく。
+		line = outputs[j]  # 行の内容を取得。
+		if "│   " in line:  # 下に続く縦棒があるとき
+			outputs[j] = line.replace("│   ", indent, 1)  # j行目のline内の左端の不要な縦棒を空白に置換。
+			flg = False
+		elif "├─" in line:  # 下に続く分岐があるとき。
+			outputs[j] = line.replace("├─", "└─", 1)  # 分岐を終了枝に置換してループを出る。
+			flg = False
+			break	
+		else:  # 縦枝も横にでる分岐もないときはループを出る。
+			break
+	if flg:
+		outputs.append(_("{}There is no service or interface.").format(indent))  # サービスやインターフェイスがありません。	
 def getAttrbs(args, obj):
 	outputs, tdm, css = args
 	st_ss, st_nontdm, st_is, st_ps = [set() for i in range(4)]  # サービス名、TypeDescriptionオブジェクトを取得できないサービス名、インターフェイス名を入れる集合、プロパティのみProperty Structを返す。
@@ -58,7 +119,7 @@ def getAttrbs(args, obj):
 				st_is.add(j.Name)  # すでにスーパークラスを取得したインターフェイス名を取得する。
 				getSuperInterface(st_is, [j])	
 			else:  # サービスかインターフェイス以外のときは未対応。
-				outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.".format(idl)))  # はサービス名またはインターフェイス名ではないので未対応です。
+				outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.").format(idl))  # はサービス名またはインターフェイス名ではないので未対応です。
 		else:  # TypeDescriptionを取得できないIDL名のとき
 			st_nontdm.add(idl)  # TypeDescriptionオブジェクトを取得できないサービスの集合に追加。		
 	else:  # objが文字列以外の時
@@ -112,7 +173,7 @@ def getSuperInterface(st_is, tdms):  # 再帰的にインターフェイスの�
 		if lst_itd:  # スーパークラスのインターフェイスがあるとき。
 			st_is.update(i.Name for i in lst_itd)  # スーパークラスのインターフェイス名を取得。
 			getSuperInterface(st_is, lst_itd)
-def treeCreator(tdm, css, fns, outputs, omi):				
+def treeCreator(indent, tdm, css, fns, outputs, omi):				
 	def createTree(st_s, st_non, st_i, st_p, *, omis=None):  # st_pの要素はプロパティ名ではなくProperty Struct。omisは出力を抑制する名前のタプルのタプル。
 		if omis is None:
 			st_oms, st_omi, st_omp = set(), omi.copy(), set()  # すでに取得したサービス名、プロパティ名を入れる集合。
@@ -120,7 +181,6 @@ def treeCreator(tdm, css, fns, outputs, omi):
 			st_oms, st_omi, st_omp = omis  
 			st_omi.update(omi)  # デフォルトの出力抑制インターフェイスを追加する。
 		if any([st_s-st_oms, st_non, st_i-st_omi, st_p-st_omp]):  # 出力するものがあるとき。
-			indent = "	  "  # インデントを設定。
 			consumeStack = createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp)  # クロージャーに値を渡す。
 			non_ss = selectNonSupers(tdm, st_s.copy(), getSuperServices)  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
 			stack = []  # スタックを初期化。
@@ -153,26 +213,6 @@ def treeCreator(tdm, css, fns, outputs, omi):
 					branch = ["├─"] 
 					branch.append(i.replace(css, ""))  # 一番最後のサービス名をbranchの要素に追加。
 					fns["NOLINK"]("".join(branch))  # リンクをつけずに出力。	
-			properties = [i for i in st_p if not i.Name in st_omp]  # すでに出力されたプロパティを除く。Property Structのリストが返る。		
-			if properties:  # まだ出力していないプロパティが存在する時。
-				props = sorted(properties, key=lambda x: x.Name)  #Name属性で昇順に並べる。
-				m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。
-				fns["NOLINK"]("└──")  # 枝の最後なので下に枝を出さない。
-				for i in props:  # 各プロパティについて。
-					branch = [indent*2]  # 枝をリセット。
-					branch.append("{}  {}".format(i.Type.typeName.replace(css, "").rjust(m), i.Name))  # 型は最大文字数で右寄せにする。
-					fns["PROPERTY"]("".join(branch))  # プロパティの行を出力。	
-			else:			
-				n = len(outputs)  # 出力行数を取得。
-				for j in reversed(range(n)):  # 出力行を下からみていく。
-					line = outputs[j]  # 行の内容を取得。
-					if "│   " in line:  # 下に続く縦棒があるとき
-						outputs[j] = line.replace("│   ", indent, 1)  # j行目のline内の左端の不要な縦棒を空白に置換。
-					elif "├─" in line:  # 下に続く分岐があるとき。
-						outputs[j] = line.replace("├─", "└─", 1)  # 分岐を終了枝に置換してループを出る。
-						break	
-		else:  # wcompare()のときは出力するものがないときがありうる。
-			outputs.append(_("There is no service or interface."))  # サービスやインターフェイスがありません。		
 		return st_oms, st_omi-omi, st_omp  # 出力したサービス名、インターフェイス名、プロパティ名を返す。
 	return createTree			
 def selectNonSupers(tdm, st, getSupers):  # ツリーでスーパークラスが先にでてこないようにスーパークラスにあたる名前を削除する。
