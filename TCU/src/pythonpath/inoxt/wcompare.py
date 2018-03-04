@@ -74,10 +74,12 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 def finalizeBlock(indent, outputs, fns, css, ps, ns1, ns2=None):  # ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。		
 	if ns1 or ns2:  # プロパティ名が残っているとき。
 		s = indent * 4
-		fns["NOLINK"](_("└──(Properties belonging to the unknown service or interface)"))  # 枝の最後なので下に枝を出さない。
-		[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns1)] # プロパティの行を出力。	
+		if ns1:
+			fns["NOLINK"](_("└──(Properties belonging to the unknown service or interface)"))  # 枝の最後なので下に枝を出さない。
+			[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns1)] # プロパティの行を出力。	
 		if ns2:
-			fns["NOLINK"](_("{}(Properties belonging to the service or interface in the counterpart)").format(indent*2))
+			h = indent*2 if ns1 else "└──"
+			fns["NOLINK"](_("{}(Properties belonging to the service or interface in the counterpart)").format(h))
 			[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns2)] # プロパティの行を出力。	
 	else:
 		removeBranch(indent, outputs)  # 余剰な縦枝を刈る。				

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: optiondialog.py\n"
-"POT-Creation-Date: 2018-03-04 12:21+0900\n"
-"PO-Revision-Date: 2018-03-04 12:22+0900\n"
+"POT-Creation-Date: 2018-03-05 00:03+0900\n"
+"PO-Revision-Date: 2018-03-05 00:03+0900\n"
 "Last-Translator: p--q <pq.blogspot@gmail.com>\n"
 "Language-Team: p--q <pq.blogspot@gmail.com>\n"
 "Language: Japanese\n"
@@ -53,7 +53,7 @@ msgstr "デフォルトに戻す(~R)"
 msgid "Select ref folder"
 msgstr "refフォルダを選択する"
 
-#: ../../../wcompare.py:25 ../../../wcompare.py:77
+#: ../../../wcompare.py:25 ../../../wcompare.py:78
 msgid "└──(Properties belonging to the unknown service or interface)"
 msgstr "└──(サービスやインターフェイスに属しないプロパティ)"
 
@@ -69,20 +69,20 @@ msgstr "object1だけがもつサービスとインターフェイス一覧"
 msgid "Services and interfaces that only object2 has."
 msgstr "object2だけがもつサービスとインターフェイス一覧"
 
-#: ../../../wcompare.py:80
+#: ../../../wcompare.py:82
 msgid "{}(Properties belonging to the service or interface in the counterpart)"
 msgstr "{}(相手のサービスやインターフェイスに属しているプロパティにあるもの)"
 
-#: ../../../wcompare.py:103
+#: ../../../wcompare.py:105
 msgid "{}There is no service or interface."
 msgstr "{}サービスやインターフェイスはありません。"
 
-#: ../../../wcompare.py:120
+#: ../../../wcompare.py:122
 msgid ""
 "{} is not a service name or an interface name, so it is not supported yet."
 msgstr "{}はサービス名またはインターフェイス名ではないので未対応です。"
 
-#: ../../../wcompare.py:147
+#: ../../../wcompare.py:149
 msgid "There is no service or interface to support."
 msgstr "サポートするサービスやインターフェイスがありません。"
 
