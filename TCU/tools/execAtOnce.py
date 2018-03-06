@@ -36,3 +36,4 @@ if __name__ == '__main__':
 	deployOXT(c)
 	
 	print("By running TestPyUnoComponent.py, you can check the operation of the created oxt file.")
+	

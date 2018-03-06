@@ -21,11 +21,7 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 	if obj2 is None:  # obj2がないときは比較しない。
 		omis = treeCreator(indent, tdm, css, fns, outputs, st_omi)(ss_obj1, nontdm_obj1, is_obj1, ps_obj1)  # obj1のサービスとインターフェイスのみ出力する。	
 		rnames1 = set(i.Name for i in ps_obj1) - omis[-1]  # まだ出力されていないobj1のプロパティ名の集合を取得。
-		if rnames1:  # まだ出力されていないプロパティ名があるとき。
-			fns["NOLINK"](_("└──(Properties belonging to the unknown service or interface)"))  # 枝の最後なので下に枝を出さない。
-			[fns["PROPERTY"](b) for b in getPBranches(css, indent*2, ps_obj1, rnames1)]  # プロパティの行を出力。	
-		else:
-			removeBranch(indent, outputs)  # 余剰な縦枝を刈る。		
+		finalizeBlock(indent, outputs, fns, css, ps_obj1, rnames1)
 	else:  # obj2があるときはobj1と比較する。	
 		ss_obj2, nontdm_obj2, is_obj2, ps_obj2 = getAttrbs(args, obj2)  # obj2のサービス名、TypeDescriptionオブジェクトがないサービス名、インターフェイス名、プロパティのみProperty Struct、の集合。
 		is_obj2.difference_update(st_omi)  # 出力しないインターフェイス名を除いておく。
@@ -73,20 +69,21 @@ def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer
 		finalizeBlock(indent, outputs, fns, css, ps_obj2, names21, names22)  # obj2のみの部分の最終処理。
 def finalizeBlock(indent, outputs, fns, css, ps, ns1, ns2=None):  # ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。		
 	if ns1 or ns2:  # プロパティ名が残っているとき。
+		format_type = typeFormatter(re.compile(r'\[\]'))  # 型から角括弧ペアを取得する正規表現オブジェクトを渡す。
 		s = indent * 4
 		if ns1:
 			fns["NOLINK"](_("└──(Properties belonging to the unknown service or interface)"))  # 枝の最後なので下に枝を出さない。
-			[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns1)] # プロパティの行を出力。	
+			[fns["PROPERTY"](b) for b in getPBranches(format_type, css, s, ps, ns1)] # プロパティの行を出力。	
 		if ns2:
 			h = indent*2 if ns1 else "└──"
 			fns["NOLINK"](_("{}(Properties belonging to the service or interface in the counterpart)").format(h))
-			[fns["PROPERTY"](b) for b in getPBranches(css, s, ps, ns2)] # プロパティの行を出力。	
+			[fns["PROPERTY"](b) for b in getPBranches(format_type, css, s, ps, ns2)] # プロパティの行を出力。	
 	else:
 		removeBranch(indent, outputs)  # 余剰な縦枝を刈る。				
-def getPBranches(css, s, ps, names):  # s: 余白。ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。
+def getPBranches(format_type, css, s, ps, names):  # s: 余白。ps: Property Structのイテラブル、names: 出力するプロパティ名のイテラブル。
 	props = [i for i in sorted(ps, key=lambda x: x.Name) if i.Name in names]  # Name属性で昇順に並べかえたProperty Structのリストを取得。
 	m = max(len(i.Type.typeName.replace(css, "")) for i in props)  # プロパティの型のうち最大文字数を取得。	
-	return ["{}{}  {}".format(s, i.Type.typeName.replace(css, "").rjust(m), i.Name) for i in props]	
+	return ["{}{}  {}".format(s, format_type(i.Type.typeName.replace(css, "")).rjust(m), i.Name) for i in props]	
 def removeBranch(indent, outputs):  # 余剰な縦枝を刈る。
 	n = len(outputs)  # 出力行数を取得。
 	flg = True
@@ -239,17 +236,19 @@ def getSuperInterfaces(st, st_sup, j):  # スーパーインターフェイス�
 	st_sup.update(names)  # スーパークラス名を取得する。
 	for j in lst_super:  # 各スーパークラスのTypeDescriptionオブジェクトについて。
 		getSuperInterfaces(st, st_sup, j)	
+def typeFormatter(reg_sqb):
+	def format_type(typ):  # 属性がシークエンスのとき[]の表記を修正。
+		n = len(reg_sqb.findall(typ))  # 角括弧のペアのリストの数を取得。
+		for dummy in range(n):  # 角括弧の数だけ繰り返し。
+			typ = typ.replace("]", "", 1) + "]" 
+		return typ  # 訂正した表記を返す。
+	return format_type		
 def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):	
-		reg_sqb = re.compile(r'\[\]')  # 型から角括弧ペアを取得する正規表現オブジェクト。
+		format_type = typeFormatter(re.compile(r'\[\]'))  # 型から角括弧ペアを取得する正規表現オブジェクトを渡す。
 		inout_dic = {(True, False): "[in]", (False, True): "[out]", (True, True): "[inout]"}  # メソッドの引数のinout変換辞書。	
 		def consumeStack(stack):  # サービスかインターフェイスのTypeDescriptionのリストを引数とする。スタックの最後から出力される。
 			m = 0  # 最大文字数を初期化。
-			lst_level = [1]*len(stack)  # stackの要素すべてについて枝分かれ番号を取得。1から始まる。
-			def _format_type(typ):  # 属性がシークエンスのとき[]の表記を修正。
-				n = len(reg_sqb.findall(typ))  # 角括弧のペアのリストの数を取得。
-				for dummy in range(n):  # 角括弧の数だけ繰り返し。
-					typ = typ.replace("]", "", 1) + "]" 
-				return typ  # 訂正した表記を返す。			
+			lst_level = [1]*len(stack)  # stackの要素すべてについて枝分かれ番号を取得。1から始まる。			
 			def _stack_interface(lst_itd):  # インターフェイスをスタックに追加する。引数はインターフェイスのTypeDescriptionオブジェクトのリスト。
 				lst_itd = [i for i in lst_itd if not i.Name in st_omi]  # st_omiを除く。
 				stack.extend(sorted(lst_itd, key=lambda x: x.Name, reverse=True))  # 降順にしてスタックに追加。
@@ -318,7 +317,7 @@ def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):
 						typcls2 = stack[lst_level.index(level)].getTypeClass()  # スタックにある同じ枝分かれ番号のものの先頭の要素のTypeClassを取得。
 						if typcls2==INTERFACE or typcls2==SERVICE: branch[1] = "│   "  # サービスかインターフェイスのとき。横枝だったのを縦枝に書き換える。
 					if typcls==INTERFACE_METHOD:  # jがメソッドのとき。
-						typ = _format_type(j.ReturnType.Name.replace(css, ""))  # 戻り値の型を取得。
+						typ = format_type(j.ReturnType.Name.replace(css, ""))  # 戻り値の型を取得。
 						stack2 = list(j.Parameters)[::-1]  # メソッドの引数について逆順(降順ではない)にスタック2に取得。
 						if not stack2:  # 引数がないとき。
 							branch.append("{}  {}()".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 「戻り値の型(固定幅mで右寄せ) メソッド名()」をbranchの3番の要素に取得。
@@ -327,7 +326,7 @@ def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):
 							m3 = max(len(i.Type.Name.replace(css, "")) for i in stack2)  # 引数の型の最大文字数を取得。
 							k = stack2.pop()  # 先頭の引数を取得。
 							inout = inout_dic[(k.isIn(), k.isOut())]  # 引数の[in]の判定、[out]の判定
-							typ2 = _format_type(k.Type.Name.replace(css, ""))  # 戻り値の型を取得。
+							typ2 = format_type(k.Type.Name.replace(css, ""))  # 戻り値の型を取得。
 							branch.append("{}  {}( {} {} {}".format(typ.rjust(m), j.MemberName.replace(css, ""), inout, typ2.rjust(m3), k.Name.replace(css, "")))  # 「戻り値の型(固定幅で右寄せ)  メソッド名(inout判定　引数の型(固定幅m3で左寄せ) 引数名」をbranchの3番の要素に取得。
 							m2 = len("{}  {}( ".format(typ.rjust(m), j.MemberName.replace(css, "")))  # メソッドの引数の部分をインデントする文字数を取得。
 							if stack2:  # 引数が複数あるとき。
@@ -337,7 +336,7 @@ def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):
 								while stack2:  # 1番以降の引数があるとき。
 									k = stack2.pop()
 									inout = inout_dic[(k.isIn(), k.isOut())]  # 引数の[in]の判定、[out]の判定
-									typ2 = _format_type(k.Type.Name.replace(css, ""))  # 戻り値の型を取得。
+									typ2 = format_type(k.Type.Name.replace(css, ""))  # 戻り値の型を取得。
 									branch.append("{}{} {} {}".format(" ".rjust(m2), inout, typ2.rjust(m3), k.Name.replace(css, "")))  # 「戻り値の型とメソッド名の固定幅m2 引数の型(固定幅m3で左寄せ) 引数名」をbranchの2番の要素に取得。
 									if stack2:  # 最後の引数でないとき。
 										branch.append(",")  # branchの3番の要素に「,」を取得。
@@ -367,11 +366,11 @@ def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):
 							else:  # 例外がないとき。
 								fns["INTERFACE_METHOD"]("{})".format("".join(branch)))  # 閉じ括弧をつけて最後の引数を出力。
 					elif typcls==PROPERTY:  # プロパティのとき。
-						typ = _format_type(j.getPropertyTypeDescription().Name.replace(css, ""))  # プロパティの型を取得。
+						typ = format_type(j.getPropertyTypeDescription().Name.replace(css, ""))  # プロパティの型を取得。
 						branch.append("{}  {}".format(typ.rjust(m), j.Name))  # 型は最大文字数で右寄せにする。
 						fns["PROPERTY"]("".join(branch))  # プロパティの行を出力。
 					elif typcls==INTERFACE_ATTRIBUTE:  # アトリビュートのとき。
-						typ = _format_type(j.Type.Name.replace(css, ""))  # 戻り値の型を取得。
+						typ = format_type(j.Type.Name.replace(css, ""))  # 戻り値の型を取得。
 						branch.append("{}  {}".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 型は最大文字数で右寄せにする。
 						fns["INTERFACE_METHOD"]("".join(branch))  # アトリビュートの行を出力。				
 		return consumeStack
