@@ -161,6 +161,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-3-5 version 2.1.0 Comparing by property names in wcompare() method.
 
+2018-3-6 version 2.1.1 Fixed a bug.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
