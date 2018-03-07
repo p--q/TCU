@@ -141,7 +141,9 @@ def getAttrbs(args, obj):
 		if hasattr(obj, "getProperties"):	# objにgetPropertiesがあるとき。
 			st_ps.update(obj.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。		
 		elif hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。getProperties()とgetPropertySetInfo()どちらかか両方あるオブジェクトがあるがその違いは不明。
-			st_ps.update(obj.getPropertySetInfo().getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
+			info = obj.getPropertySetInfo()  # Noneが返ってくるオブジェクトがある。
+			if info:
+				st_ps.update(info.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
 		if not any([st_ss, st_nontdm, st_is, st_ps]):
 			outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
 	return st_ss, st_nontdm, st_is, st_ps  # プロパティのみProperty Structを返す。
