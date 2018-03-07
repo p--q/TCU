@@ -163,6 +163,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-3-6 version 2.1.1 Fixed a bug.
 
+2018-3-7 version 2.1.2 Deal with when the return value of the object's getPropertySetInfo() method is None.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
