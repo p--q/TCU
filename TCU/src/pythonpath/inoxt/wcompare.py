@@ -141,7 +141,9 @@ def getAttrbs(args, obj):
 		if hasattr(obj, "getProperties"):	# objにgetPropertiesがあるとき。
 			st_ps.update(obj.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。		
 		elif hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。getProperties()とgetPropertySetInfo()どちらかか両方あるオブジェクトがあるがその違いは不明。
-			st_ps.update(obj.getPropertySetInfo().getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
+			info = obj.getPropertySetInfo()  # Noneが返ってくるオブジェクトがある。
+			if info:
+				st_ps.update(info.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。
 		if not any([st_ss, st_nontdm, st_is, st_ps]):
 			outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
 	return st_ss, st_nontdm, st_is, st_ps  # プロパティのみProperty Structを返す。
@@ -372,5 +374,5 @@ def createStackConsumer(indent, css, fns, st_oms, st_omi, st_omp):
 					elif typcls==INTERFACE_ATTRIBUTE:  # アトリビュートのとき。
 						typ = format_type(j.Type.Name.replace(css, ""))  # 戻り値の型を取得。
 						branch.append("{}  {}".format(typ.rjust(m), j.MemberName.replace(css, "")))  # 型は最大文字数で右寄せにする。
-						fns["INTERFACE_METHOD"]("".join(branch))  # アトリビュートの行を出力。				
+						fns["INTERFACE_METHOD"]("".join(branch))  # アトリビュートの行を出力。			
 		return consumeStack
