@@ -5,6 +5,7 @@ import re, os
 from com.sun.star.beans import PropertyValue  # Struct
 from com.sun.star.lang import XServiceInfo
 from com.sun.star.awt import XContainerWindowEventHandler
+from com.sun.star.uno.TypeClass import ENUM, TYPEDEF, STRUCT, EXCEPTION, INTERFACE, CONSTANTS  # enum
 from pq import XTcu  # 拡張機能で定義したインターフェイスをインポート。
 from .optiondialog import dilaogHandler
 from .wsgi import Wsgi, createHTMLfile
@@ -58,14 +59,14 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 	def wtree(self, obj):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
-		fns = createFns(prefix, fns_keys, outputs)
+		fns = createFns(ctx, css, prefix, fns_keys, outputs)
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
 		wCompare(args, obj, None)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
-		fns = createFns(prefix, fns_keys, outputs)
+		fns = createFns(ctx, css, prefix, fns_keys, outputs)
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
 		wCompare(args, obj1, obj2)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
@@ -102,10 +103,10 @@ def getConfigs(consts):
 	idls = "".join(idlstext.split()).split(",")  # xmlがフォーマットされていると空白やタブが入ってくるのでそれを除去してリストにする。
 	idlsset = set("{}{}".format(css, i) if i.startswith(".") else i for i in idls)  # "com.sun.star"が略されていれば付ける。
 	return ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset	
-def createFns(prefix, fns_keys, outputs):
+def createFns(ctx, css, prefix, fns_keys, outputs):
 	reg_idl = re.compile(r'(?<!\w)\.[\w\.]+')  # IDL名を抽出する正規表現オブジェクト。
 	reg_i = re.compile(r'(?<!\w)\.[\w\.]+\.X[\w]+')  # インターフェイス名を抽出する正規表現オブジェクト。
-	reg_e = re.compile(r'(?<!\w)\.[\w\.]+\.[\w]+Exception')  # 例外名を抽出する正規表現オブジェクト。
+	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
 	def _make_anchor(typ, i, item_with_branch):
 		lnk = "<a href='{}{}com_1_1sun_1_1star{}.html' target='_blank' style='text-decoration:none;'>{}</a>".format(prefix, typ, i.replace(".", "_1_1"), i)  # 下線はつけない。
 		return item_with_branch.replace(i, lnk)
@@ -118,16 +119,17 @@ def createFns(prefix, fns_keys, outputs):
 			outputs.append(item_with_branch)
 	def _fn(item_with_branch):  # サービス名とインターフェイス名以外を出力するときの関数。
 		idl = set(reg_idl.findall(item_with_branch)) # 正規表現でIDL名を抽出する。
-		inf = reg_i.findall(item_with_branch) # 正規表現でインターフェイス名を抽出する。
-		exc = reg_e.findall(item_with_branch) # 正規表現で例外名を抽出する。
-		idl.difference_update(inf, exc)  # IDL名のうちインターフェイス名と例外名を除く。
-		idl = list(idl)  # 残ったIDL名はすべてStructと考えて処理する。
-		for i in inf:  # インターフェイス名があるとき。
-			item_with_branch = _make_anchor("interface", i, item_with_branch)
-		for i in exc:  # 例外名があるとき。
-			item_with_branch = _make_anchor("exception", i, item_with_branch)
-		for i in idl:  # インターフェイス名と例外名以外について。
-			item_with_branch = _make_anchor("struct", i, item_with_branch)
+		for i in idl:  # STRUCT, EXCEPTION, INTERFACE, CONSTANTSを振り分け。ENUM, TYPEDEFはリンクを取得できない。
+			j = tdm.getByHierarchicalName("{}{}".format(css, i) if i.startswith(".") else i)  # TypeDescriptionオブジェクトを取得。
+			typeclass = j.getTypeClass()  # enum TypeClassを取得。
+			if typeclass==INTERFACE:  # インターフェイス名があるとき。
+				item_with_branch = _make_anchor("interface", i, item_with_branch)
+			elif typeclass==EXCEPTION:  # 例外名があるとき。
+				item_with_branch = _make_anchor("exception", i, item_with_branch)
+			elif typeclass==STRUCT:  # Structがあるとき。
+				item_with_branch = _make_anchor("struct", i, item_with_branch)
+			elif typeclass==CONSTANTS:  # 定数があるとき。
+				item_with_branch = _make_anchor("namespacecom", i, item_with_branch)
 		outputs.append(item_with_branch)
 	def _fn_s(item_with_branch):  # サービス名にアンカータグをつける。
 		_make_link("service", reg_idl, item_with_branch)

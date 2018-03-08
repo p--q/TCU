@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
 # 	print("\ncreateXcs\n")
 # 	createXcs(c)
-
+# 
 # 	print("\ncreateXMLs\n")
 # 	createXMLs(c)  # components, rdb, xcu, xcsファイルを作成した時に実行が必要。
 	

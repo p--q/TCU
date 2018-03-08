@@ -3,7 +3,7 @@
 import re
 from .common import localization
 from com.sun.star.container import NoSuchElementException
-from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE
+from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE  # enum
 def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer=True, stderrToServer=True)
 	ctx, configurationprovider, css, fns, st_omi, outputs = args  # st_omi: スタックに追加しないインターフェイス名の集合。
 	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
@@ -139,7 +139,8 @@ def getAttrbs(args, obj):
 				st_is.update(typenames)
 				getSuperInterface(st_is, [tdm.getByHierarchicalName(i) for i in typenames]) 
 		if hasattr(obj, "getProperties"):	# objにgetPropertiesがあるとき。
-			st_ps.update(obj.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。		
+			if not hasattr(obj, "getMandatoryServices"):  # getMandatoryServices()メソッドがあるときはTypeDescriptionオブジェクトなのでgetProperties()は取得しない。
+				st_ps.update(obj.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。		
 		elif hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。getProperties()とgetPropertySetInfo()どちらかか両方あるオブジェクトがあるがその違いは不明。
 			info = obj.getPropertySetInfo()  # Noneが返ってくるオブジェクトがある。
 			if info:
@@ -151,7 +152,7 @@ def getSuperService(args):  # 再帰的にサービスのスーパークラス�
 	st_ss, st_is, tdms = args
 	for j in tdms:  # 各サービスのTypeDescriptionオブジェクトについて。
 		lst_itd = []  # サービスがもっているインターフェイスを入れるリストを初期化。
-		if j.isSingleInterfaceBased():  # new-styleサービスのとき。
+		if hasattr(j, "isSingleInterfaceBased") and j.isSingleInterfaceBased():  # new-styleサービスのとき。拡張機能によってはisSingleInterfaceBased()メソッドのないときもある。
 			lst_itd.append(j.getInterface())  # new-styleサービスのインターフェイスを取得。TypeDescriptionオブジェクト。
 		else:  # old-styleサービスのときはスーパークラスのサービスがありうる。
 			lst_std = list(j.getMandatoryServices())
@@ -191,7 +192,6 @@ def treeCreator(indent, tdm, css, fns, outputs, omi):
 				if non_si:  # インターフェイスがあるとき。
 					stack = [tdm.getByHierarchicalName(i) for i in sorted(non_si, reverse=True)]  # 降順にしてTypeDescriptionオブジェクトに変換してスタックに取得。
 					st_omi.update(non_si)  # すでに取得したインターフェイス名の集合に追加。
-	
 			consumeStack(stack)  # ツリーを出力。
 			st_s.difference_update(st_oms)  # すでに出力されたサービス名を除く。比較のときは出力抑制されたスーパークラスのサービス名がでてくる。
 			if st_s:  # まだ出力されていないサービスが残っているとき。
