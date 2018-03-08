@@ -5,6 +5,7 @@ import re, os
 from com.sun.star.beans import PropertyValue  # Struct
 from com.sun.star.lang import XServiceInfo
 from com.sun.star.awt import XContainerWindowEventHandler
+from com.sun.star.uno.TypeClass import ENUM, TYPEDEF, STRUCT, EXCEPTION, INTERFACE, CONSTANTS  # enum
 from pq import XTcu  # 拡張機能で定義したインターフェイスをインポート。
 from .optiondialog import dilaogHandler
 from .wsgi import Wsgi, createHTMLfile
@@ -48,24 +49,38 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 	def getSupportedMethodNames(self):
 		return "tree", "wtree"
 	# XUnoTreeCommand
-	def tree(self, obj):  # 一行ずつの文字列のシークエンスを返す。
+	def treelines(self, obj):  # 一行ずつの文字列のシークエンスを返す。
 		ctx, configurationprovider, css, fns_keys, dummy_offline, dummy_prefix, idlsset = getConfigs(self.consts)
 		outputs = []
 		fns = {key: outputs.append for key in fns_keys}
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
 		wCompare(args, obj, None)
 		return outputs
+	def wtreelines(self, obj):  # 一行ずつの文字列のシークエンスを返す。連続スペースはnbspに置換の必要あり。
+		ctx, configurationprovider, css, fns_keys, dummy, prefix, idlsset = getConfigs(self.consts)
+		outputs = []
+		fns = createFns(ctx, css, prefix, fns_keys, outputs)
+		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		wCompare(args, obj, None)		
+		return outputs
+	def wcomparelines(self, obj1, obj2):  # 一行ずつの文字列のシークエンスを返す。連続スペースはnbspに置換の必要あり。
+		ctx, configurationprovider, css, fns_keys, dummy, prefix, idlsset = getConfigs(self.consts)
+		outputs = []  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		fns = createFns(ctx, css, prefix, fns_keys, outputs)
+		args = ctx, configurationprovider, css, fns, idlsset, outputs
+		wCompare(args, obj1, obj2)
+		return outputs
 	def wtree(self, obj):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
-		fns = createFns(prefix, fns_keys, outputs)
+		fns = createFns(ctx, css, prefix, fns_keys, outputs)
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
 		wCompare(args, obj, None)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
 		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
-		fns = createFns(prefix, fns_keys, outputs)
+		fns = createFns(ctx, css, prefix, fns_keys, outputs)
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
 		wCompare(args, obj1, obj2)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
@@ -102,12 +117,13 @@ def getConfigs(consts):
 	idls = "".join(idlstext.split()).split(",")  # xmlがフォーマットされていると空白やタブが入ってくるのでそれを除去してリストにする。
 	idlsset = set("{}{}".format(css, i) if i.startswith(".") else i for i in idls)  # "com.sun.star"が略されていれば付ける。
 	return ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset	
-def createFns(prefix, fns_keys, outputs):
+def createFns(ctx, css, prefix, fns_keys, outputs):
 	reg_idl = re.compile(r'(?<!\w)\.[\w\.]+')  # IDL名を抽出する正規表現オブジェクト。
 	reg_i = re.compile(r'(?<!\w)\.[\w\.]+\.X[\w]+')  # インターフェイス名を抽出する正規表現オブジェクト。
-	reg_e = re.compile(r'(?<!\w)\.[\w\.]+\.[\w]+Exception')  # 例外名を抽出する正規表現オブジェクト。
-	def _make_anchor(typ, i, item_with_branch):
-		lnk = "<a href='{}{}com_1_1sun_1_1star{}.html' target='_blank' style='text-decoration:none;'>{}</a>".format(prefix, typ, i.replace(".", "_1_1"), i)  # 下線はつけない。
+	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
+	def _make_anchor(typ, i, item_with_branch, fragment):
+		m = ".".join(i.split(".")[:-1]) if fragment else i  # フラグメントがあるとき(ENUMやTYPEDEFのとき)モジュールへのパスの取得。
+		lnk = "<a href='{}{}com_1_1sun_1_1star{}.html{}' target='_blank' style='text-decoration:none;'>{}</a>".format(prefix, typ, m.replace(".", "_1_1"), fragment, i)  # 下線はつけない。
 		return item_with_branch.replace(i, lnk)
 	def _make_link(typ, regex, item_with_branch):
 		idl = regex.findall(item_with_branch)  # 正規表現でIDL名を抽出する。
@@ -117,17 +133,26 @@ def createFns(prefix, fns_keys, outputs):
 		else:
 			outputs.append(item_with_branch)
 	def _fn(item_with_branch):  # サービス名とインターフェイス名以外を出力するときの関数。
-		idl = set(reg_idl.findall(item_with_branch)) # 正規表現でIDL名を抽出する。
-		inf = reg_i.findall(item_with_branch) # 正規表現でインターフェイス名を抽出する。
-		exc = reg_e.findall(item_with_branch) # 正規表現で例外名を抽出する。
-		idl.difference_update(inf, exc)  # IDL名のうちインターフェイス名と例外名を除く。
-		idl = list(idl)  # 残ったIDL名はすべてStructと考えて処理する。
-		for i in inf:  # インターフェイス名があるとき。
-			item_with_branch = _make_anchor("interface", i, item_with_branch)
-		for i in exc:  # 例外名があるとき。
-			item_with_branch = _make_anchor("exception", i, item_with_branch)
-		for i in idl:  # インターフェイス名と例外名以外について。
-			item_with_branch = _make_anchor("struct", i, item_with_branch)
+		idl = reg_idl.findall(item_with_branch) # 正規表現でIDL名を抽出する。
+		for i in idl:  # STRUCT, EXCEPTION, INTERFACE, CONSTANTSのIDLのみアンカーを付ける。ENUM, TYPEDEFはリンクを取得できない。
+			j = tdm.getByHierarchicalName("{}{}".format(css, i) if i.startswith(".") else i)  # TypeDescriptionオブジェクトを取得。
+			typeclass = j.getTypeClass()  # enum TypeClassを取得。辞書のキーにはなれない、uno.RuntimeException: <class 'TypeError'>: unhashable type: 'Enum'となる。
+			fragment = ""
+			if typeclass==INTERFACE:
+				t = "interface"
+			elif typeclass==EXCEPTION:
+				t = "exception"
+			elif typeclass==STRUCT:
+				t = "struct"		
+			elif typeclass== CONSTANTS:
+				t = "namespace"				
+			elif typeclass==ENUM:				
+				t = "namespace"	
+				fragment = "#enum-members"
+			elif  typeclass==TYPEDEF:  
+				t = "namespace"	
+				fragment = "#typedef-members"
+			item_with_branch = _make_anchor(t, i, item_with_branch, fragment)
 		outputs.append(item_with_branch)
 	def _fn_s(item_with_branch):  # サービス名にアンカータグをつける。
 		_make_link("service", reg_idl, item_with_branch)
