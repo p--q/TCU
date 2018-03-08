@@ -11,11 +11,11 @@ if __name__ == '__main__':
 	# シェルコマンドのエラーでは止まらないのでログを最初から確認する必要あり。
 	c = getConfig(False)
 	
-#	 print("\ncreateIDLs\n")
-#	 createIDLs(c)   
+# 	print("\ncreateIDLs\n")
+# 	createIDLs(c)   
    
-#	 print("\ncreateRDB\n")
-#	 createRDB(c)
+# 	print("\ncreateRDB\n")
+# 	createRDB(c)
  
 #	 print("\ncreateProtocolHandlerXcu\n")
 #	 createProtocolHandlerXcu(c)
@@ -25,15 +25,15 @@ if __name__ == '__main__':
 
 # 	print("\ncreateXcs\n")
 # 	createXcs(c)
-# 
+ 
 # 	print("\ncreateXMLs\n")
 # 	createXMLs(c)  # components, rdb, xcu, xcsファイルを作成した時に実行が必要。
 	
 	print("\ncreateOXT\n")
 	createOXT(c)
 	
-	print("\ndeployOXT\n")
-	deployOXT(c)
+# 	print("\ndeployOXT\n")
+# 	deployOXT(c)
 	
 	print("By running TestPyUnoComponent.py, you can check the operation of the created oxt file.")
 	

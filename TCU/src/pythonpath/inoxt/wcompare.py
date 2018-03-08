@@ -131,16 +131,18 @@ def getAttrbs(args, obj):
 				st_ss = set(i if tdm.hasByHierarchicalName(i) else st_nontdm.add(i) for i in st_ss)  # TypeDescriptionオブジェクトが取得できないサービス名を削除する。
 				st_ss.discard(None)  # tdm.hasByHierarchicalName(i)がFalseのときに入ってくるNoneを削除する。remove()では要素がないときにエラーになる。
 				args = st_ss, st_is, [tdm.getByHierarchicalName(i) for i in st_ss]
-				getSuperService(args)  # TypeDescriptionオブジェクトに変換して渡す。	
+				getSuperService(args)  # TypeDescriptionオブジェクトに変換して渡す。
+		types = tuple()  # オブジェクトのインターフェイスを入れるタプル。
 		if hasattr(obj, "getTypes"):  # サービスを介さないインターフェイスがある場合。elifにしてはいけない。
-			types = obj.getTypes()  # インターフェイス名ではなくtype型が返ってくる。
+			types = obj.getTypes()  # インターフェイス名ではなくtype型のタプルが返ってくる。
 			if types:  # type型が取得できたとき。
 				typenames = [i.typeName for i in types]  #  # types型をインターフェイス名のリストに変換。
 				st_is.update(typenames)
 				getSuperInterface(st_is, [tdm.getByHierarchicalName(i) for i in typenames]) 
 		if hasattr(obj, "getProperties"):	# objにgetPropertiesがあるとき。
-			if not hasattr(obj, "getMandatoryServices"):  # getMandatoryServices()メソッドがあるときはTypeDescriptionオブジェクトなのでgetProperties()は取得しない。
-				st_ps.update(obj.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。		
+			if types:  # オブジェクトのインターフェイスが取得出来ているとき。
+				if "com.sun.star.beans.XPropertySetInfo" in types:  # XPropertySetInfoインターフェイスのgetProperties()メソッドのときのみ。
+					st_ps.update(obj.getProperties())  # すべてのプロパティのProperty Structのタプルが返ってくるので集合にする。		
 		elif hasattr(obj, "getPropertySetInfo"):	# objにgetPropertySetInfoがあるとき。getProperties()とgetPropertySetInfo()どちらかか両方あるオブジェクトがあるがその違いは不明。
 			info = obj.getPropertySetInfo()  # Noneが返ってくるオブジェクトがある。
 			if info:

@@ -5,7 +5,9 @@
 
 module pq {
 	interface XTcu {
-		sequence <string> tree([in] any Object);
+		sequence <string> treelines([in] any Object);
+		sequence <string> wtreelines([in] any Object);
+		sequence <string> wcomparelines([in] any Object1, [in] any Object2);
 		void wtree([in] any Object);
 		void wcompare([in] any Object1, [in] any Object2);
 	};
