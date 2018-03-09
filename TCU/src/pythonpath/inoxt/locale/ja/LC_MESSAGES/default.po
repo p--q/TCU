@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: optiondialog.py\n"
-"POT-Creation-Date: 2018-03-05 00:03+0900\n"
-"PO-Revision-Date: 2018-03-05 00:03+0900\n"
+"POT-Creation-Date: 2018-03-09 11:12+0900\n"
+"PO-Revision-Date: 2018-03-09 11:14+0900\n"
 "Last-Translator: p--q <pq.blogspot@gmail.com>\n"
 "Language-Team: p--q <pq.blogspot@gmail.com>\n"
 "Language: Japanese\n"
@@ -53,36 +53,49 @@ msgstr "デフォルトに戻す(~R)"
 msgid "Select ref folder"
 msgstr "refフォルダを選択する"
 
-#: ../../../wcompare.py:25 ../../../wcompare.py:78
-msgid "└──(Properties belonging to the unknown service or interface)"
-msgstr "└──(サービスやインターフェイスに属しないプロパティ)"
-
-#: ../../../wcompare.py:35
+#: ../../../wcompare.py:31
 msgid "Services and interface common to object1 and object2."
 msgstr "object1とobject2に共通するサービスとインターフェイス一覧"
 
-#: ../../../wcompare.py:42
+#: ../../../wcompare.py:38
 msgid "Services and interfaces that only object1 has."
 msgstr "object1だけがもつサービスとインターフェイス一覧"
 
-#: ../../../wcompare.py:49
+#: ../../../wcompare.py:45
 msgid "Services and interfaces that only object2 has."
 msgstr "object2だけがもつサービスとインターフェイス一覧"
 
-#: ../../../wcompare.py:82
+#: ../../../wcompare.py:75
+msgid "└──(Properties belonging to the unknown service or interface)"
+msgstr "└──(サービスやインターフェイスに属しないプロパティ)"
+
+#: ../../../wcompare.py:79
 msgid "{}(Properties belonging to the service or interface in the counterpart)"
 msgstr "{}(相手のサービスやインターフェイスに属しているプロパティにあるもの)"
 
-#: ../../../wcompare.py:105
+#: ../../../wcompare.py:102
 msgid "{}There is no service or interface."
 msgstr "{}サービスやインターフェイスはありません。"
 
-#: ../../../wcompare.py:122
+#: ../../../wcompare.py:121
+msgid "{} is {}, so it is not supported yet."
+msgstr "{}は{}なのでサポートしていません。"
+
+#: ../../../wcompare.py:123
 msgid ""
 "{} is not a service name or an interface name, so it is not supported yet."
 msgstr "{}はサービス名またはインターフェイス名ではないので未対応です。"
 
+#: ../../../wcompare.py:145
+msgid "{} is {}, not a service name."
+msgstr "{}は{}であってサービス名ではありません。"
+
 #: ../../../wcompare.py:149
+msgid "getSupportedServiceNames() method returns non-service names."
+msgstr ""
+"getSupportedServiceNames()メソッドでサービス名でないものが返ってきます。"
+
+#: ../../../wcompare.py:171
 msgid "There is no service or interface to support."
 msgstr "サポートするサービスやインターフェイスがありません。"
 
@@ -94,6 +107,3 @@ msgstr "サポートするサービスやインターフェイスがありませ
 
 #~ msgid "Ignored Interfaces:"
 #~ msgstr "無視するインターフェイス:"
-
-#~ msgid "{} is not an IDL name."
-#~ msgstr "{}はIDL名ではありません。"

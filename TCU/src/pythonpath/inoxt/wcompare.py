@@ -3,7 +3,7 @@
 import re
 from .common import localization
 from com.sun.star.container import NoSuchElementException
-from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE  # enum
+from com.sun.star.uno.TypeClass import SERVICE, INTERFACE, PROPERTY, INTERFACE_METHOD, INTERFACE_ATTRIBUTE, ENUM, TYPEDEF, STRUCT, EXCEPTION, CONSTANTS, MODULE  # enum
 def wCompare(args, obj1, obj2):  # import pydevd; pydevd.settrace(stdoutToServer=True, stderrToServer=True)
 	ctx, configurationprovider, css, fns, st_omi, outputs = args  # st_omi: スタックに追加しないインターフェイス名の集合。
 	tdm = ctx.getByName('/singletons/com.sun.star.reflection.theTypeDescriptionManager')  # TypeDescriptionManagerをシングルトンでインスタンス化。
@@ -115,12 +115,16 @@ def getAttrbs(args, obj):
 			elif typcls == INTERFACE:  # インターフェイスの時
 				st_is.add(j.Name)  # すでにスーパークラスを取得したインターフェイス名を取得する。
 				getSuperInterface(st_is, [j])	
-			else:  # サービスかインターフェイス以外のときは未対応。
-				outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.").format(idl))  # はサービス名またはインターフェイス名ではないので未対応です。
+			else:  # サービスかインターフェイス以外のときは未対応。ENUM, TYPEDEF, STRUCT, EXCEPTION, CONSTANTS, MODULE
+				txt = getTypeName(typcls)	
+				if txt:
+					outputs.append(_("{} is {}, so it is not supported yet.").format(idl, txt))  # はサービス名またはインターフェイス名ではないので未対応です。
+				else:
+					outputs.append(_("{} is not a service name or an interface name, so it is not supported yet.").format(idl))  # はサービス名またはインターフェイス名ではないので未対応です。
 		else:  # TypeDescriptionを取得できないIDL名のとき
 			st_nontdm.add(idl)  # TypeDescriptionオブジェクトを取得できないサービスの集合に追加。		
 	else:  # objが文字列以外の時
-		if hasattr(obj, "getSupportedServiceNames"):  # オブジェクトがサービスを持っているとき。
+		if hasattr(obj, "getSupportedServiceNames"):  # オブジェクトがサービスを持っているとき。サービス名は間違っている時がある。
 			st_ss.update(obj.getSupportedServiceNames())  # サポートサービス名を集合にして取得。
 			incorrectidls = {"com.sun.star.AccessibleSpreadsheetDocumentView": "com.sun.star.sheet.AccessibleSpreadsheetDocumentView"}  # 間違って返ってくるIDL名の辞書。
 			st_incorrects = st_ss.intersection(incorrectidls.keys())  # 間違っているIDL名の集合を取得。
@@ -128,9 +132,25 @@ def getAttrbs(args, obj):
 				st_ss.remove(incorrect)  # 間違ったIDL名を除く。
 				st_ss.add(incorrectidls[incorrect])  # 正しいIDL名を追加する。
 			if st_ss:
-				st_ss = set(i if tdm.hasByHierarchicalName(i) else st_nontdm.add(i) for i in st_ss)  # TypeDescriptionオブジェクトが取得できないサービス名を削除する。
-				st_ss.discard(None)  # tdm.hasByHierarchicalName(i)がFalseのときに入ってくるNoneを削除する。remove()では要素がないときにエラーになる。
-				args = st_ss, st_is, [tdm.getByHierarchicalName(i) for i in st_ss]
+				names, tdms = set(), set()  # サービス名、TypeDescriptionを入れる集合。
+				incorrectnames = []  # サービス名でないIDL名のときの出力行。
+				for i in st_ss:
+					if tdm.hasByHierarchicalName(i):  # TypeDescriptsionオブジェクトが取得できるサービス名の時。
+						j = tdm.getByHierarchicalName(i)  # TypeDescriptsionオブジェクトを取得。
+						typeclass = j.getTypeClass()  # TypeClassを取得。
+						if typeclass==SERVICE:  # サービスのときのみ。サービスでないときがあるので。
+							names.add(i)
+							tdms.add(j)	
+						else:
+							incorrectnames.append(_("{} is {}, not a service name.").format(i, getTypeName(typeclass)))	
+					else:  # TypeDescriptsionオブジェクトが取得できないサービス名の時。
+						st_nontdm.add(i)
+				if incorrectnames:
+					outputs.append(_("getSupportedServiceNames() method returns non-service names."))
+					outputs.extend(incorrectnames)
+					outputs.append("")
+				st_ss = names
+				args = st_ss, st_is, tdms
 				getSuperService(args)  # TypeDescriptionオブジェクトに変換して渡す。
 		types = tuple()  # オブジェクトのインターフェイスを入れるタプル。
 		if hasattr(obj, "getTypes"):  # サービスを介さないインターフェイスがある場合。elifにしてはいけない。
@@ -150,11 +170,30 @@ def getAttrbs(args, obj):
 		if not any([st_ss, st_nontdm, st_is, st_ps]):
 			outputs.append(_("There is no service or interface to support."))  # サポートするサービスやインターフェイスがありません。
 	return st_ss, st_nontdm, st_is, st_ps  # プロパティのみProperty Structを返す。
+def getTypeName(typeclass):  # typeclassから文字列を返す。
+	txt = ""
+	if typeclass==ENUM:
+		txt = "ENUM"
+	elif typeclass==TYPEDEF:
+		txt = "TYPEDEF"				
+	elif typeclass==STRUCT:
+		txt = "STRUCT"						
+	elif typeclass==EXCEPTION:
+		txt = "EXCEPTION"			
+	elif typeclass==CONSTANTS:
+		txt = "CONSTANTS"		
+	elif typeclass==MODULE:
+		txt = "MODULE"		
+	elif typeclass==INTERFACE:
+		txt = "INTERFACE"
+	elif typeclass==SERVICE:		
+		txt = "SERVICE"
+	return txt
 def getSuperService(args):  # 再帰的にサービスのスーパークラスとインターフェイス名を取得する。XServiceTypeDescription2インターフェイスをもつTypeDescriptionオブジェクト
 	st_ss, st_is, tdms = args
 	for j in tdms:  # 各サービスのTypeDescriptionオブジェクトについて。
 		lst_itd = []  # サービスがもっているインターフェイスを入れるリストを初期化。
-		if hasattr(j, "isSingleInterfaceBased") and j.isSingleInterfaceBased():  # new-styleサービスのとき。拡張機能によってはisSingleInterfaceBased()メソッドのないときもある。
+		if j.isSingleInterfaceBased():  # new-styleサービスのとき。
 			lst_itd.append(j.getInterface())  # new-styleサービスのインターフェイスを取得。TypeDescriptionオブジェクト。
 		else:  # old-styleサービスのときはスーパークラスのサービスがありうる。
 			lst_std = list(j.getMandatoryServices())
