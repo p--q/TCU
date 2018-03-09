@@ -49,15 +49,17 @@ def createNodes(name, lines):
 	
 # 	txt = "<br/>".join(lines).replace(" "*2, "&nbsp;"*2).replace(" "*3, "&nbsp;"*3).replace(" "*4, "&nbsp;"*4)  # 連続したスペースはブラウザで一つにされるのでnbspに置換する。一つのスペースを置換するとタグ内まで置換されるのでダメ。
 
-	txt = "<br/>".join(lines)
+# 	txt = "<br/>".join(lines)
+	nbsp = chr(0x00A0)
+	txt = "<br/>".join(lines).replace(" "*2, nbsp*2).replace(" "*3, nbsp*3).replace(" "*4, nbsp*4)  # 連続したスペースはブラウザで一つにされるのでnbspに置換する。一つのスペースを置換するとタグ内まで置換されるのでダメ。
+	
 	
 	xml = "<tt style='white-space: nowrap;'>{}</tt>".format(txt)
 	tabbodynode.append(ET.XML(xml))
 	
 	
 # 	tabbodynode.append(Elem("tt", {"style": "white-space: nowrap;"}, text=txt))
-	
-	
+
 	return tabnode, tabbodynode
 def createRoot():
 	rt = Elem("html")
@@ -126,6 +128,7 @@ class Wsgi:
 		self.resp = html
 	def app(self, environ, start_response):  # WSGIアプリ。引数はWSGIサーバから渡されるデフォルト引数。
 		start_response('200 OK', [ ('Content-type','text/html; charset=utf-8')])  # charset=utf-8'がないと文字化けする時がある
+# 		yield self.resp.encode()  # デフォルトエンコードはutf-8。
 		yield self.resp  # デフォルトエンコードはutf-8。
 	def wsgiServer(self): 
 		host, port = "localhost", 8080  # サーバが受け付けるポート番号を設定。
@@ -135,6 +138,8 @@ class Wsgi:
 		httpd.handle_request()  # リクエストを1回だけ受け付けたらサーバを終了させる。ローカルファイルはセキュリティの制限で開けない。
 def toBrowser(root):
 	html = ET.tostring(root, encoding="utf-8",  method="html")  # utf-8にエンコードする。utf-8ではなくunicodeにすると文字列になる。method="html"にしないと<script>内がhtmlエンティティになってしまう。
+# 	html = ET.tostring(root, encoding="unicode",  method="html")
+# 	html = html.replace(" "*2, "&nbsp;"*2).replace(" "*3, "&nbsp;"*3).replace(" "*4, "&nbsp;"*4)
 	server = Wsgi(html)
 	server.wsgiServer()	
 class Elem(ET.Element):  
