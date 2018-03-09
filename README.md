@@ -107,13 +107,13 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 - For automation
 
-  - <a href="https://github.com/p--q/TCU/blob/master/TCU/automationexample.py">TCU/automationexample.py</a>
+  - <a href="https://github.com/p--q/TCU/blob/master/TCU/usageexample/automationexample.py">TCU/automationexample.py at master · p--q/TCU · GitHub</a>
 
     - Output the API tree of the component context.
 
 - For macro (It also contains the code for automation.)
 
-  - <a href="https://github.com/p--q/TCU/blob/master/TCU/macroexample.py">TCU/macroexample.py</a>
+  - <a href="https://github.com/p--q/TCU/blob/master/TCU/usageexample/macroexample.py">TCU/macroexample.py at master · p--q/TCU · GitHub</a>
 
     - Output the API tree of the document that launched the macro.
 
