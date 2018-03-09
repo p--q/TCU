@@ -117,6 +117,10 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
     - Output the API tree of the document that launched the macro.
 
+- wtreelines() method
+
+  - <a href="https://github.com/p--q/TCU/blob/master/TCU/usageexample/tcuclaclines.py">TCU/tcuclaclines.py at master · p--q/TCU · GitHub</a>
+
 ## Links to pages with output of TCU
 
 <a href="https://p--q.blogspot.jp/2017/11/libreoffice594.html">LibreOffice5(94)サービスとインターフェース一覧が載っているページの一覧</a>
@@ -141,9 +145,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 ## Known Issues
 
-- Anchors output by wtree() method other than services, interfaces, exceptions, Structs are invalid. ex. enum, typedef.
-
-- wtree() method can be executed only once per process.
+- wtree() and wcompare() methods can be executed only once per process.
 
 ## Release notes
 
@@ -182,6 +184,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 2018-3-6 version 2.1.1 Fixed a bug.
 
 2018-3-7 version 2.1.2 Deal with when the return value of the object's getPropertySetInfo() method is None.
+
+2018-3-9 version 3.0.1 Add treelines(), wtreelines(), wcomparelines() methods. Eliminate 404 error to API reference.
 
 ## Tools
 
@@ -236,6 +240,10 @@ For PyDev project interpreter, specify LibreOffice bundle Python.
   - deployOXT.py
   
     -  Install this extension to LibreOffice specified as the interpreter.
+    
+    -  You must execute it with LibreOffice terminated.
+    
+    -  If it failed, you have to delete the extension in the GUI.
   
   - execAtOnce.py
   
