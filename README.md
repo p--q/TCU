@@ -2,21 +2,21 @@
 
 Output the API tee from the UNO object or IDL name.
 
-├─pq.Tcu
-│   └─pq.XTcu
-│   	  	  [string]  treelines( [in] any Object)
-│   	  	      void  wcompare( [in] any Object1,
-│   	  	                      [in] any Object2)
-│   	  	  [string]  wcomparelines( [in] any Object1,
-│   	  	                           [in] any Object2)
-│   	  	      void  wtree( [in] any Object)
-│   	  	  [string]  wtreelines( [in] any Object)
-└─.awt.XContainerWindowEventHandler
-	  	   boolean  callHandlerMethod( [in] .awt.XWindow xWindow,
-	  	                               [in]          any EventObject,
-	  	                               [in]       string MethodName
-	  	                    ) raises ( .lang.WrappedTargetException)
-	  	  [string]  getSupportedMethodNames()
+	├─pq.Tcu
+	│   └─pq.XTcu
+	│   	  	  [string]  treelines( [in] any Object)
+	│   	  	      void  wcompare( [in] any Object1,
+	│   	  	                      [in] any Object2)
+	│   	  	  [string]  wcomparelines( [in] any Object1,
+	│   	  	                           [in] any Object2)
+	│   	  	      void  wtree( [in] any Object)
+	│   	  	  [string]  wtreelines( [in] any Object)
+	└─.awt.XContainerWindowEventHandler
+			   boolean  callHandlerMethod( [in] .awt.XWindow xWindow,
+						       [in]          any EventObject,
+						       [in]       string MethodName
+					    ) raises ( .lang.WrappedTargetException)
+			  [string]  getSupportedMethodNames()
 
 
 
