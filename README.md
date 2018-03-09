@@ -2,6 +2,24 @@
 
 Output the API tee from the UNO object or IDL name.
 
+	├─pq.Tcu
+	│   └─pq.XTcu
+	│   	  	  [string]  treelines( [in] any Object)
+	│   	  	      void  wcompare( [in] any Object1,
+	│   	  	                      [in] any Object2)
+	│   	  	  [string]  wcomparelines( [in] any Object1,
+	│   	  	                           [in] any Object2)
+	│   	  	      void  wtree( [in] any Object)
+	│   	  	  [string]  wtreelines( [in] any Object)
+	└─.awt.XContainerWindowEventHandler
+			   boolean  callHandlerMethod( [in] .awt.XWindow xWindow,
+						       [in]          any EventObject,
+						       [in]       string MethodName
+					    ) raises ( .lang.WrappedTargetException)
+			  [string]  getSupportedMethodNames()
+
+
+
 ## System requirements
 
 - The confirmed environment is as follows.
@@ -35,7 +53,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 	# The interface outputted once does not displayed.
 	
 	tcu = smgr.createInstanceWithContext("pq.Tcu", ctx)  
-	print("\n".join(tcu.tree(ctx)))
+	print("\n".join(tcu.treelines(ctx)))
 	
 	Connected to a running office ...
 	Using LibreOffice 5.4
