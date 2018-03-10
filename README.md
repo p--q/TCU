@@ -189,6 +189,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-3-9 version 3.0.2 Use chr(0x00A0) on behalf of &nbsp;.
 
+2018-3-10 version 3.0.3 Replace all spaces with no break space, when outputting to the web browser.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
