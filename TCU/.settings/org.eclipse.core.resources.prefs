@@ -16,3 +16,5 @@ encoding//tools/createXcs.py=utf-8
 encoding//tools/deployOXT.py=utf-8
 encoding//tools/helper.py=utf-8
 encoding//usageexample/automationexample.py=utf-8
+encoding//usageexample/macroexample.py=utf-8
+encoding//usageexample/tcuclaclines.py=utf-8
