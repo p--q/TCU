@@ -191,7 +191,7 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-3-9 version 3.0.2 Use chr(0x00A0) on behalf of &amp;nbsp;.
 
-2018-3-10 version 3.0.3 Replace contiguous U+0020 with U+00A0, when outputting to the web browser.
+2018-3-10 version 3.0.3 Replace contiguous U+0020 (breaking space) with U+00A0 (non-breaking space), when outputting to the web browser.
 
 ## Tools
 
