@@ -86,8 +86,7 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 def createHtml(ctx, offline, outputs):  # ウェブブラウザに出力。
 	outputs.append("</tt>")	
-	nbsp = chr(0x00A0)  # ノーブレークスペースを表す文字を取得。
-	html = "<br/>".join(outputs).replace(" "*2, nbsp*2).replace(" "*3, nbsp*3).replace(" "*4, nbsp*4)  # 連続したスペースはブラウザで一つにされるのでnbspに置換する。一つのスペースを置換するとタグ内まで置換されるのでダメ。
+	html = "<br/>".join(outputs).replace(" ", chr(0x00A0))  # 連続したスペースはブラウザで一つにされるのでノーブレークスペースに置換する。
 	title = "TCU - Tree Command for UNO"
 	if offline:  # ローカルリファレンスを使うときはブラウザのセキュリティの制限のためにhtmlファイルを開くようにしないとローカルファイルが開けない。
 		pathsettingssingleton = ctx.getByName('/singletons/com.sun.star.util.thePathSettings')
