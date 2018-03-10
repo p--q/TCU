@@ -1,44 +1,31 @@
 <?xml version='1.0' encoding='utf-8'?>
-<description
-	xmlns="http://openoffice.org/extensions/description/2006"
-	xmlns:d="http://openoffice.org/extensions/description/2006"
-	xmlns:l="http://libreoffice.org/extensions/description/2011"
+<description xmlns="http://openoffice.org/extensions/description/2006"
+	xmlns:d="http://openoffice.org/extensions/description/2006" xmlns:l="http://libreoffice.org/extensions/description/2011"
 	xmlns:xlink="http://www.w3.org/1999/xlink">
 	<dependencies>
-		<l:LibreOffice-minimal-version
-			d:name="LibreOffice 5.2"
+		<l:LibreOffice-minimal-version d:name="LibreOffice 5.2"
 			value="5.2" />
 	</dependencies>
-	<publisher>
-		<name
-			lang="en"
-			xlink:href="https://github.com/p--q/TCU">p--q</name>
-	</publisher>
-	<registration>
-		<simple-license
-			accept-by="admin"
-			suppress-if-required="false"
-			suppress-on-update="true">
-			<license-text
-				lang="en"
-				xlink:href="LICENSE" />
-		</simple-license>
-	</registration>
-	<version value="3.0.2" />
-	<identifier value="pq.Tcu" />
-	<icon>
-		<default xlink:href="icons/extension.png" />
-	</icon>
-	<platform value="all" />
-	<extension-description>
-		<src
-			lang="ja"
-			xlink:href="descriptions/description_ja.txt" />
-		<src
-			lang="en"
-			xlink:href="descriptions/description_en.txt" />
-	</extension-description>
 	<display-name>
 		<name lang="en">TCU - Tree Command for UNO</name>
 	</display-name>
+	<publisher>
+		<name lang="en" xlink:href="https://github.com/p--q/TCU">p--q</name>
+	</publisher>
+	<platform value="all" />
+	<identifier value="pq.Tcu" />
+	<extension-description>
+		<src lang="ja" xlink:href="descriptions/description_ja.txt" />
+		<src lang="en" xlink:href="descriptions/description_en.txt" />
+	</extension-description>
+	<icon>
+		<default xlink:href="icons/extension.png" />
+	</icon>
+	<version value="3.0.3" />
+	<registration>
+		<simple-license accept-by="admin" suppress-if-required="false"
+			suppress-on-update="true">
+			<license-text lang="en" xlink:href="LICENSE" />
+		</simple-license>
+	</registration>
 </description>
