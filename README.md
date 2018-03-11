@@ -138,6 +138,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 - **Ignored Interfaces** : Enter the interface name that you do not want to output.
 
   - By default, it suppresses the output of the <a href="https://wiki.openoffice.org/wiki/Documentation/DevGuide/WritingUNO/Core_Interfaces_to_Implement">core interfaces</a> that come up frequently.
+  
+  - Python regex pattern can be used. A word containing other than word characters and dots is used as a regular expression pattern.
 
 - **Restore Defaults** : Get the path to the API reference of locally installed SDK.
 
@@ -187,9 +189,9 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-3-9 version 3.0.1 Add treelines(), wtreelines(), wcomparelines() methods. Eliminate 404 error to API reference.
 
-2018-3-9 version 3.0.2 Use chr(0x00A0) on behalf of &nbsp;.
+2018-3-9 version 3.0.2 Use chr(0x00A0) on behalf of &amp;nbsp;.
 
-2018-3-10 version 3.0.3 Replace all spaces with no break space, when outputting to the web browser.
+2018-3-10 version 3.0.3 Replace contiguous U+0020 (breaking space) with U+00A0 (non-breaking space), when outputting to the web browser.
 
 ## Tools
 
