@@ -72,20 +72,20 @@ class TreeCommand(unohelper.Base, XServiceInfo, XTcu, XContainerWindowEventHandl
 		return outputs
 	def wtree(self, obj):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
-		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		outputs = ['<code style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(ctx, css, prefix, fns_keys, outputs)
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
 		wCompare(args, obj, None)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 	def wcompare(self, obj1, obj2):  # obj1とobj2を比較して結果をウェブブラウザに出力する。
 		ctx, configurationprovider, css, fns_keys, offline, prefix, idlsset = getConfigs(self.consts)
-		outputs = ['<tt style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
+		outputs = ['<code style="white-space: nowrap;">']  # 出力行を収納するリストを初期化。等幅フォントのタグを指定。
 		fns = createFns(ctx, css, prefix, fns_keys, outputs)
 		args = ctx, configurationprovider, css, fns, idlsset, outputs
 		wCompare(args, obj1, obj2)
 		createHtml(ctx, offline, outputs)  # ウェブブラウザに出力。
 def createHtml(ctx, offline, outputs):  # ウェブブラウザに出力。
-	outputs.append("</tt>")	
+	outputs.append("</code>")	
 	html = "<br/>".join(outputs).replace(" ", chr(0x00A0))  # 半角スペースをノーブレークスペースに置換する。
 	html = re.sub(r'(?<!\u00A0)\u00A0(?!\u00A0)', " ", html)  # タグ内にノーブレークスペースはエラーになるので連続しないノーブレークスペースを半角スペースに戻す。
 	title = "TCU - Tree Command for UNO"
