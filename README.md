@@ -193,6 +193,8 @@ In description.xml, LibreOffice-minimal-version is 5.2.
 
 2018-3-10 version 3.0.3 Replace contiguous U+0020 (breaking space) with U+00A0 (non-breaking space), when outputting to the web browser.
 
+2018-3-11 version 3.0.4 Replace <tt> tag with <code> tag.
+
 ## Tools
 
 This repository is Eclipse's PyDev project.
