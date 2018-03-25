@@ -3,14 +3,15 @@
 from wsgiref.simple_server import make_server
 import webbrowser
 _resp = '''\
+<!DOCTYPE html>
 <html>
-  <head>
-	 <title>{0}</title>
-	 <meta charset="UTF-8">
-   </head>
-   <body>
-	 {1}
-   </body>
+	<head>
+	  	<meta charset="UTF-8">
+		<title>{0}</title>
+	</head>
+	<body>
+		{1}
+	</body>
 </html>'''  # ローカルファイルとして開くときは<meta charset="UTF-8">がないと文字化けする。
 class Wsgi:
 	def __init__(self, title, html):
