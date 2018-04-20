@@ -56,7 +56,4 @@ def getConfig(backupflg=None):
 if __name__ == "__main__":
 	c = getConfig(False)
 	print(c)
-  
-	
-	
-	
+ 
